@@ -15,7 +15,6 @@ function App() {
     const unsubscribe = auth.onAuthStateChanged(user => {
       setUser(user);
       setLoading(false);
-      alert(JSON.stringify(user))
     });
 
     return () => unsubscribe();
@@ -36,7 +35,7 @@ function App() {
         <Route path="/sign-up" element={<PhoneSignIn />} />
          
         <Route element={<PrivateRoutes auth={user}/>}>
-          <Route path='*' element={<Main />} />
+          <Route path='*' element={<Navigate to="/" />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/sign-up" />} />
