@@ -1,24 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+
+import axios from 'axios'
+
 import PhoneSignIn from "./Components/PhoneSignUp";
 import Main from "./Components/Main.js";
-import PrivateRoutes from './PrivateRoutes';
-import { getAuth } from "firebase/auth";
+import LogIn from './Components/LogIn.js';
 
 function App() {
-  
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+
+  const [loading, setLoading] = useState(true)
+  const [loggedIn, setLoggedIn] = useState(false)
+
+  const onNavigation = useCallback(() => {
+
+    axios.get('http://localhost:3001/status', { withCredentials: true })
+		.then(function (response) {
+			if (response.status === 200) {
+        if (response.data.status === "logged-in") setLoggedIn(true);
+        else setLoggedIn(false);
+      }
+      else setLoggedIn(false);
+		})
+		.catch(function (error) {
+			setLoggedIn(false);
+		});
+
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = auth.onAuthStateChanged(user => {
-      setUser(user);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
+    onNavigation()
+  }, [onNavigation]);
 
   if (loading) {
     // Show loading indicator while checking authentication status
@@ -28,20 +41,21 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route element={<PrivateRoutes auth={user}/>}>
-          <Route path='/' element={<Main />} />
-        </Route>
-        
-        <Route path="/sign-up" element={<PhoneSignIn />} />
-         
-        <Route element={<PrivateRoutes auth={user}/>}>
-          <Route path='*' element={<Navigate to="/" />} />
-        </Route>
-
-        <Route path="*" element={<Navigate to="/sign-up" />} />
+        {loggedIn ?
+          <>
+            <Route path='/' element={<Main onNavigation={onNavigation}/>} />
+            <Route path='*' element={<Navigate to="/" />} />
+          </>
+         :
+          <>
+            <Route path="/sign-up" element={<PhoneSignIn />} />
+            <Route path="/login" element={<LogIn onNavigation={onNavigation} />} />
+            <Route path="*" element={<Navigate to="/login" />} />
+          </>
+        }
       </Routes>
     </Router>
   )
 }
 
-export default App;
+export default App

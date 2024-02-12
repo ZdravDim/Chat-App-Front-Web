@@ -1,0 +1,7 @@
+.custom-input {
+    border-radius: 0 !important;
+}
+
+.custom-input:focus {
+    box-shadow: none !important;
+}

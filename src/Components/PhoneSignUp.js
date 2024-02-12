@@ -60,7 +60,9 @@ function PhoneSignIn() {
     }
 
     // stores user data in firestore
-    const signUpFunction = async() => {
+    const signUpFunction = async(event) => {
+
+        event.preventDefault()
 
         const hashedPassword = sha256.create().update(password).hex();
 
