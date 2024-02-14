@@ -39,7 +39,7 @@ function Main({onNavigation}) {
 
 		if (!message.length) return
 		const id = uuidv4()
-		
+
 		// send to socket
 		sendMessage(message, phoneNumber, id)
 	
@@ -52,7 +52,7 @@ function Main({onNavigation}) {
 
 		try {
 
-			const response = await axios.get('http://localhost:3001/logout', { withCredentials: true })
+			const response = await axios.get('http://localhost:3001/api/logout', { withCredentials: true })
 
 			if (response.status === 200) {
 				onNavigation()

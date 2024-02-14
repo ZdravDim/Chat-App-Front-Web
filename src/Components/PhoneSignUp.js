@@ -38,6 +38,7 @@ function PhoneSignIn() {
             setDisplayLevel(1);
             console.log(confirmation)
             setUser(confirmation)
+            
         } catch(err) {
             console.error(err)
             setInvalidPhone(true)

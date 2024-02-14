@@ -24,7 +24,7 @@ function LogIn({onNavigation}) {
             password: sha256(password)
         };
 
-        axios.post('http://localhost:3001/login', body, { withCredentials: true })
+        axios.post('http://localhost:3001/api/login', body, { withCredentials: true })
         .then((response) => {
             if (response.status === 200) {
                 console.log("Login successful.")

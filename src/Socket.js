@@ -2,10 +2,10 @@ import { io } from 'socket.io-client';
 
 let socket = null;
 
-const socket_connect = (token) => {
+const socket_connect = () => {
     const URL = 'http://localhost:3001';
 
-    socket = io(URL, { auth: { token: token } });
+    socket = io(URL);
 
     socket.on('message', handleIncomingMessage);
     socket.on("connect_error", onError);
@@ -13,7 +13,6 @@ const socket_connect = (token) => {
 
 export const socket_disconnect = () => {
     if (socket) socket.disconnect()
-    else console.log("Error: Socket not disconnected. (socket = null)")
 }
 
 export function sendMessage(message, phoneNumber, id) {

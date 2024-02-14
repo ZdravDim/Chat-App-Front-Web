@@ -13,23 +13,19 @@ function App() {
 
   const [loading, setLoading] = useState(true)
   const [loggedIn, setLoggedIn] = useState(false)
-  const [token, setToken] = useState(null)
 
   const onNavigation = useCallback(async() => {
 
     try {
-      const response = await axios.get('http://localhost:3001/auth', { withCredentials: true });
+      const response = await axios.post('http://localhost:3001/api/auth', null, { withCredentials: true });
 
-      if (response.status === 200 && response.data.status === "logged-in") {
-        setToken(response.data.token)
-        setLoggedIn(true);
-      }
+      if (response.status === 200) setLoggedIn(true)
     
       else setLoggedIn(false)
 
-    } catch (error) { setLoggedIn(false); }
-
-    setLoading(false);
+    }
+    catch (error) { setLoggedIn(false); }
+    finally { setLoading(false); }
 
   }, []);
 
@@ -38,9 +34,9 @@ function App() {
   }, [onNavigation]);
 
   useEffect(() => {
-    if (loggedIn) socket_connect(token);
+    if (loggedIn) socket_connect()
     else socket_disconnect() 
-  }, [loggedIn, token]);
+  }, [loggedIn]);
 
   if (loading) {
     // Show loading indicator while checking authentication status
