@@ -8,69 +8,59 @@ import axios from 'axios'
 
 import './Main.css'
 import { RiLogoutBoxLine } from "react-icons/ri";
-import { socket } from '../Socket.js'
+
+import { sendMessage, setMessageListener, removeMessageListener } from "../Socket.js"
+
 import { v4 as uuidv4 } from 'uuid'
 
 function Main({onNavigation}) {
 
 	const navigate = useNavigate()
-	const { phoneNumber } = "..." //from jwt
+	const { phoneNumber } = "+381..." //from jwt
 	const [message, setMessage] = useState("")
-	const [messageHistory, setMessageHistory] = useState([]);
 	const inputFieldReference = useRef(null);
+
+	const [messageHistory, setMessageHistory] = useState([]);
+
+	const handleMessage = (message) => {
+		setMessageHistory(prevMessages => [...prevMessages, message]);
+	};
+
+	useEffect(() => {
+
+		setMessageListener(handleMessage);
+
+		return () => { removeMessageListener(handleMessage); };
+
+	  }, []);
 
 	const sendMessageToRoom = (event) => {
 		event.preventDefault();
 
 		if (!message.length) return
 		const id = uuidv4()
-
-		// Send message
-		socket.emit('message', {
-			phoneNumber: phoneNumber,
-			message: message,
-			id: id
-		});
+		
+		// send to socket
+		sendMessage(message, phoneNumber, id)
 	
 		// Clear the message input field after sending
 		setMessage("");
 		inputFieldReference.current.value = "";
 	}
 
-	// eslint-disable-next-line
-	const [isConnected, setIsConnected] = useState(socket.connected);
+	const logOut = async() => {
 
-	useEffect(() => {
-		// Connect
-		function onConnect() { setIsConnected(true); }
-		// Push new message
-		function handleIncomingMessage(newMessage) { setMessageHistory(prevMessages => [...prevMessages, newMessage]); }
-		// Disconnect
-		function onDisconnect() { setIsConnected(false); }
+		try {
 
-		socket.on('connect', onConnect);
-		socket.on('message', handleIncomingMessage);
-		socket.on('disconnect', onDisconnect);
+			const response = await axios.get('http://localhost:3001/logout', { withCredentials: true })
 
-		return () => {
-			socket.off('connect', onConnect);
-			socket.off('message', handleIncomingMessage);
-			socket.off('disconnect', onDisconnect);
-		};
-	}, []);
-
-	const logOut = () => {
-
-		axios.get('http://localhost:3001/logout', { withCredentials: true })
-		.then(function (response) {
 			if (response.status === 200) {
 				onNavigation()
 				navigate("/login")
 			}
-		})
-		.catch(function (error) {
-			console.log(error);
-		});
+
+		} catch(error) { console.log(error.message) }
+
 	}
 
 	return (
@@ -81,7 +71,6 @@ function Main({onNavigation}) {
 
 			<div className='h-100 w-25 text-white text-break text-center bg-custom-grey'>
 				<h2 className='my-2'>Rooms</h2>
-				<p>{phoneNumber}</p> {/* TO DELETE */}
 				{/* rooms here */}
 			</div>
 

@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 
 import axios from 'axios'
 
+import socket_connect, { socket_disconnect } from './Socket.js'
+
 import PhoneSignIn from "./Components/PhoneSignUp";
 import Main from "./Components/Main.js";
 import LogIn from './Components/LogIn.js';
@@ -11,27 +13,34 @@ function App() {
 
   const [loading, setLoading] = useState(true)
   const [loggedIn, setLoggedIn] = useState(false)
+  const [token, setToken] = useState(null)
 
-  const onNavigation = useCallback(() => {
+  const onNavigation = useCallback(async() => {
 
-    axios.get('http://localhost:3001/status', { withCredentials: true })
-		.then(function (response) {
-			if (response.status === 200) {
-        if (response.data.status === "logged-in") setLoggedIn(true);
-        else setLoggedIn(false);
+    try {
+      const response = await axios.get('http://localhost:3001/auth', { withCredentials: true });
+
+      if (response.status === 200 && response.data.status === "logged-in") {
+        setToken(response.data.token)
+        setLoggedIn(true);
       }
-      else setLoggedIn(false);
-		})
-		.catch(function (error) {
-			setLoggedIn(false);
-		});
+    
+      else setLoggedIn(false)
+
+    } catch (error) { setLoggedIn(false); }
 
     setLoading(false);
+
   }, []);
 
   useEffect(() => {
     onNavigation()
   }, [onNavigation]);
+
+  useEffect(() => {
+    if (loggedIn) socket_connect(token);
+    else socket_disconnect() 
+  }, [loggedIn, token]);
 
   if (loading) {
     // Show loading indicator while checking authentication status
@@ -43,7 +52,7 @@ function App() {
       <Routes>
         {loggedIn ?
           <>
-            <Route path='/' element={<Main onNavigation={onNavigation}/>} />
+            <Route path='/' element={<Main onNavigation={onNavigation} loggedIn={loggedIn}/>} />
             <Route path='*' element={<Navigate to="/" />} />
           </>
          :
