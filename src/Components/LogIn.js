@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
@@ -63,6 +63,8 @@ function LogIn({onNavigation}) {
                 }
 
                 <Button type="submit" className='w-300 mt-3 rounded-0 btn-success'>Login</Button>
+                <p className='text-center my-2'>Don't have an account? <Link to="/sign-up" className="text-success">Sign up</Link> </p>
+            
             </Form>
         </div>
     )

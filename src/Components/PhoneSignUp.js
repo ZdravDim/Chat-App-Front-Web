@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 import { InputOTP } from 'antd-input-otp'
 import PhoneInput from 'react-phone-input-2'
@@ -29,7 +29,6 @@ function PhoneSignIn() {
     const [invalidPhone, setInvalidPhone] = useState(false)
     const [phoneTaken, setPhoneTaken] = useState(false)
     const [isActive, setIsActive] = useState(false)
-
     const phoneNumberTaken = async() => {
 
         try {
@@ -121,6 +120,7 @@ function PhoneSignIn() {
                     { invalidPhone && <p className='text-danger my-1'>Invalid phone number</p> }
                     <div className={isActive ? 'my-1' : ''} id="recaptcha" ></div>
                     <Button className='w-300 mt-1 rounded-0 btn-success' onClick={sendOtp}>Send OTP</Button>
+                    <p className="mt-1">Already have an account? <Link to="/login" className="text-success">Log in here</Link></p>
                     
                 </>
             }

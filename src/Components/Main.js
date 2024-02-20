@@ -3,11 +3,15 @@ import { useNavigate } from 'react-router-dom'
 
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
+import Modal from 'react-bootstrap/Modal'
 
 import axios from 'axios'
 
 import './Main.css'
 import { RiLogoutBoxLine } from "react-icons/ri";
+import { IoSettingsOutline, IoSend } from "react-icons/io5";
+import { BiExpandHorizontal } from "react-icons/bi";
+import { MdDeleteOutline } from "react-icons/md";
 
 import { sendMessage, setMessageListener, removeMessageListener } from "../Socket.js"
 
@@ -18,6 +22,7 @@ function Main({onNavigation}) {
 	const navigate = useNavigate()
 	const { phoneNumber } = "+381..." //from jwt
 	const [message, setMessage] = useState("")
+	const [settingsShow, setSettingsShow] = useState(false);
 	const inputFieldReference = useRef(null);
 
 	const [messageHistory, setMessageHistory] = useState([]);
@@ -48,6 +53,29 @@ function Main({onNavigation}) {
 		inputFieldReference.current.value = "";
 	}
 
+
+	const settings = async() => { setSettingsShow(true)	}
+	const settingsClose = async() => {setSettingsShow(false)}
+
+	const deleteAccount = async() => { 
+		
+		try {
+
+			const response = await axios.delete('http://localhost:3001/api/deleteAccount', { withCredentials: true })
+
+			if (response.status === 200) {
+				onNavigation()
+				navigate("/login")
+			}
+
+		} catch(error) { console.log(error.message) }
+
+	}
+
+	const chatView = async() => {
+		// expand or hide -> adapt chat width  
+	}
+
 	const logOut = async() => {
 
 		try {
@@ -66,7 +94,9 @@ function Main({onNavigation}) {
 	return (
 		<div className='d-flex flex-row h-100 bg-dark'>
 			<div className='w-3 text-center'>
-				<RiLogoutBoxLine className='mt-3 text-white logout-icon' onClick={logOut} />
+				<RiLogoutBoxLine className='icon' onClick={logOut} />
+				<IoSettingsOutline className='icon' onClick={settings}/>
+				<BiExpandHorizontal className='icon' onClick={chatView}/>
 			</div>
 
 			<div className='h-100 w-25 text-white text-break text-center bg-custom-grey'>
@@ -75,10 +105,10 @@ function Main({onNavigation}) {
 			</div>
 
 			<div className="d-flex flex-column h-100 w-72">
-				<div className="flex-grow-1 mb-auto">
-					<div className='p-2'>
+				<div className="flex-grow-1 mb-20">
+					<div className='p-3'>
 						{messageHistory.map((message) => (
-							<div key={message["id"]} className='text-white'>
+							<div key={message["id"]} className='text-white bg-custom-grey mb-1 mt-2 message-container'>
 								{message["phoneNumber"]}: {message["message"]}
 							</div>
 						))}
@@ -93,10 +123,35 @@ function Main({onNavigation}) {
 					className="shadow-none rounded-0"
 					onChange={(event) => setMessage(event.target.value)}
 					/>  
-					<Button type="submit" className="btn-success rounded-0">Send</Button>
+					<Button type="submit" className="btn-success rounded-0"><IoSend className='text-white m-1'/></Button>
 				</Form>
 			</div>
+			<Modal 
+				show={ settingsShow }
+				onHide={ settingsClose }
+				backdrop="static"
+				keyboard={false}
+				centered>
+
+				<Modal.Header closeButton> 
+					<Modal.Title>Settings</Modal.Title> 
+				</Modal.Header>
+
+				<Modal.Body>
+					<div className='d-flex flex-row w-100 bg-grey'>
+						<p className='w-85 m-0'>Delete your account.</p>
+						<MdDeleteOutline className='settings-icon w-15' onClick={deleteAccount}/>
+					</div>
+        		</Modal.Body>
+
+				<Modal.Footer>
+					<Button className='btn-success' onClick={settingsClose}>Close</Button>
+				</Modal.Footer>
+				
+			
+			</Modal>
 		</div>
+
 	)
 }
 

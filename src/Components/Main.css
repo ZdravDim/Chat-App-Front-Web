@@ -18,12 +18,43 @@
   width: 72% !important;
 }
 
-.logout-icon:hover {
+.w-85 {
+  width: 85% !important;
+}
+
+.w-15 {
+  width: 15% !important;
+}
+
+.icon:hover {
   color: lightgrey !important;
 }
 
-.logout-icon {
+.icon {
+  margin-top: 1em;
+  color: white;
   cursor: pointer;
   width: min(2vw, 35px);
   height: min(2vw, 35px);
+}
+
+.settings-icon {
+  color: #292c31;
+  height: auto;
+  cursor: pointer;
+  width: min(1.5vw, 30px);
+  height: min(1.5vw, 30px);
+}
+
+.settings-icon:hover {
+  color: rgba(0, 48, 2, 0.749) !important;
+}
+
+
+.message-container {
+max-width: 45%;
+width: fit-content;
+padding: 0.4em 0.7em 0.4em; 
+word-wrap: break-word;
+border-radius: 5em;
 }
