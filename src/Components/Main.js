@@ -8,7 +8,7 @@ import Modal from 'react-bootstrap/Modal'
 import axios from 'axios'
 
 import './Main.css'
-import { RiLogoutBoxLine } from "react-icons/ri";
+import { RiLogoutBoxLine, RiLoginBoxLine } from "react-icons/ri";
 import { IoSettingsOutline, IoSend, IoAdd } from "react-icons/io5";
 import { BiExpandHorizontal } from "react-icons/bi";
 import { MdDeleteOutline, MdOutlineDone } from "react-icons/md";
@@ -30,6 +30,7 @@ function Main({onNavigation}) {
 	const [currentRoom, setCurrentRoom] = useState(null)
 	const [createRoomName, setCreateRoomName] = useState('');
 	const [emptyRoomName, setEmptyRoomName] = useState(false)
+	const [joinRoomModal, setJoinRoomModal] = useState(false);
 	const inputFieldReference = useRef(null);
 
 	const [messageHistory, setMessageHistory] = useState([]);
@@ -67,14 +68,6 @@ function Main({onNavigation}) {
 		setMessage("");
 		inputFieldReference.current.value = "";
 	}
-
-
-	const settings = () => { setSettingsShow(true) }
-	const settingsClose = () => { setSettingsShow(false) }
-
-
-	const createRoomVisible = () => { setCreateRoomShow(true) }
-	const createRoomHide = () => { setCreateRoomShow(false) }
 
 	const addRoom = (roomName) => {
 		setRooms(prevRooms => [...prevRooms, {
@@ -139,8 +132,9 @@ function Main({onNavigation}) {
 		<div className='d-flex flex-row h-100 bg-dark'>
 			<div className='w-8 text-center'>
 				<RiLogoutBoxLine className='icon' onClick={logOut} />
-				<IoSettingsOutline className='icon' onClick={settings}/>
-				<IoAdd className='icon' onClick={() => { setEmptyRoomName(false); createRoomVisible()}}/>
+				<RiLoginBoxLine className='icon' onClick={ () => setJoinRoomModal(true) }/>
+				<IoSettingsOutline className='icon' onClick= { () => setSettingsShow(true) }/>
+				<IoAdd className='icon' onClick={() => { setEmptyRoomName(false); setCreateRoomShow(true)}}/>
 				<BiExpandHorizontal className='icon' onClick={() => setShowRooms(!showRooms)}/>
 			</div>
 
@@ -183,7 +177,7 @@ function Main({onNavigation}) {
 
 			<Modal 
 				show={ settingsShow }
-				onHide={ settingsClose }
+				onHide={ () => setSettingsShow(false) }
 				backdrop="static"
 				keyboard={false}
 				centered>
@@ -200,14 +194,14 @@ function Main({onNavigation}) {
         		</Modal.Body>
 
 				<Modal.Footer>
-					<Button className='btn-success' onClick={settingsClose}>Close</Button>
+					<Button className='btn-success' onClick={() => setSettingsShow(false)}>Close</Button>
 				</Modal.Footer>
 				
 			</Modal>
 
 			<Modal 
 				show={ createRoomShow }
-				onHide={ createRoomHide }
+				onHide={ () => setCreateRoomShow(false) }
 				backdrop="static"
 				keyboard={false}
 				centered>
@@ -227,6 +221,32 @@ function Main({onNavigation}) {
 			
 			</Modal>	
 
+
+			<Modal 
+				show={ joinRoomModal }
+				onHide={ () => setJoinRoomModal(false) }
+				backdrop="static"
+				keyboard={false}
+				centered>
+
+				<Modal.Header closeButton> 
+					<Modal.Title>Join new Room</Modal.Title> 
+				</Modal.Header>
+
+				<Modal.Body>
+					<Form.Control className='shadow-none' type="text" placeholder="Room name" onChange={ (event) => setCreateRoomName(event.target.value) } />
+					{emptyRoomName && <p className='text-danger mb-0'>Room name can't be empty</p> }
+				</Modal.Body>
+
+				<Modal.Footer> 
+					<MdOutlineDone className='settings-icon w-15' onClick={() => setJoinRoomModal(false)}/> 
+				</Modal.Footer>
+			
+			</Modal>	
+
+
+
+			
 		</div>
 
 	)
