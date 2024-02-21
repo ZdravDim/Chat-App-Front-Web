@@ -22,15 +22,21 @@ function Main({onNavigation}) {
 
 	const navigate = useNavigate()
 	const { phoneNumber } = "+381..." //from jwt
+
 	const [showRooms, setShowRooms] = useState(true)
+
 	const [message, setMessage] = useState("")
-	const [settingsShow, setSettingsShow] = useState(false);
-	const [createRoomShow, setCreateRoomShow] = useState(false);
+
+	const [settingsModal, setSettingsModal] = useState(false);
+	const [createRoomModal, setCreateRoomModal] = useState(false);
+	const [joinRoomModal, setJoinRoomModal] = useState(false);
+
 	const [rooms, setRooms] = useState([])
 	const [currentRoom, setCurrentRoom] = useState(null)
-	const [createRoomName, setCreateRoomName] = useState('');
+
+	const [RoomModalName, setRoomModalName] = useState('');
 	const [emptyRoomName, setEmptyRoomName] = useState(false)
-	const [joinRoomModal, setJoinRoomModal] = useState(false);
+	
 	const inputFieldReference = useRef(null);
 
 	const [messageHistory, setMessageHistory] = useState([]);
@@ -42,12 +48,12 @@ function Main({onNavigation}) {
 	useEffect(() => {
 
 		// retrieve rooms from firestore
-		const data = {
-			id: '1',
-			phoneNumber: '+38164123456',
-			message: 'This is a test message from someone to no one, bla bla bla bla this is a test message from no one to someone bla bla bla bla...'
-		}
-		setMessageHistory([data]);
+		// const data = {
+		// 	id: '1',
+		// 	phoneNumber: '+38164123456',
+		// 	message: 'This is a test message from someone to no one, bla bla bla bla this is a test message from no one to someone bla bla bla bla...'
+		// }
+		// setMessageHistory([data]);
 
 		setMessageListener(handleMessage);
 
@@ -76,19 +82,21 @@ function Main({onNavigation}) {
 		}])
 	}
 
-	const createRoom = () => { 
+	const JoinOrCreateRoom = (createRoom = false) => {
 
-		if (createRoomName.length) {
+		if (RoomModalName.length) {
 			
-			addRoom(createRoomName)
+			if (createRoom) joinRoom(currentRoom, RoomModalName) // check if this creates a room
+			addRoom(RoomModalName)
+			setCurrentRoom(RoomModalName)
 
-			setCreateRoomShow(false)
+			setCreateRoomModal(false)
 			setEmptyRoomName(false)
-			setCreateRoomName('')
+			setRoomModalName('')
 		}
 		else setEmptyRoomName(true)
 
-	 }
+	}
 
 	const openRoom = (newRoom) => {
 		joinRoom(currentRoom, newRoom)
@@ -132,9 +140,9 @@ function Main({onNavigation}) {
 		<div className='d-flex flex-row h-100 bg-dark'>
 			<div className='w-8 text-center'>
 				<RiLogoutBoxLine className='icon' onClick={logOut} />
-				<RiLoginBoxLine className='icon' onClick={ () => setJoinRoomModal(true) }/>
-				<IoSettingsOutline className='icon' onClick= { () => setSettingsShow(true) }/>
-				<IoAdd className='icon' onClick={() => { setEmptyRoomName(false); setCreateRoomShow(true)}}/>
+				<RiLoginBoxLine className='icon' onClick={ () => { setEmptyRoomName(false); setJoinRoomModal(true) }}/>
+				<IoSettingsOutline className='icon' onClick= { () => setSettingsModal(true) }/>
+				<IoAdd className='icon' onClick={() => { setEmptyRoomName(false); setCreateRoomModal(true)}}/>
 				<BiExpandHorizontal className='icon' onClick={() => setShowRooms(!showRooms)}/>
 			</div>
 
@@ -176,8 +184,8 @@ function Main({onNavigation}) {
 			</div>
 
 			<Modal 
-				show={ settingsShow }
-				onHide={ () => setSettingsShow(false) }
+				show={ settingsModal }
+				onHide={ () => setSettingsModal(false) }
 				backdrop="static"
 				keyboard={false}
 				centered>
@@ -194,14 +202,14 @@ function Main({onNavigation}) {
         		</Modal.Body>
 
 				<Modal.Footer>
-					<Button className='btn-success' onClick={() => setSettingsShow(false)}>Close</Button>
+					<Button className='btn-success' onClick={() => setSettingsModal(false)}>Close</Button>
 				</Modal.Footer>
 				
 			</Modal>
 
 			<Modal 
-				show={ createRoomShow }
-				onHide={ () => setCreateRoomShow(false) }
+				show={ createRoomModal }
+				onHide={ () => setCreateRoomModal(false) }
 				backdrop="static"
 				keyboard={false}
 				centered>
@@ -211,12 +219,12 @@ function Main({onNavigation}) {
 				</Modal.Header>
 
 				<Modal.Body>
-					<Form.Control className='shadow-none' type="text" placeholder="Room name" onChange={ (event) => setCreateRoomName(event.target.value) } />
+					<Form.Control className='shadow-none' type="text" placeholder="Room name" onChange={ (event) => setRoomModalName(event.target.value) } />
 					{emptyRoomName && <p className='text-danger mb-0'>Room name can't be empty</p> }
 				</Modal.Body>
 
 				<Modal.Footer> 
-					<MdOutlineDone className='settings-icon w-15' onClick={ createRoom }/> 
+					<MdOutlineDone className='settings-icon w-15' onClick={ () => JoinOrCreateRoom(true) }/> 
 				</Modal.Footer>
 			
 			</Modal>	
@@ -234,12 +242,12 @@ function Main({onNavigation}) {
 				</Modal.Header>
 
 				<Modal.Body>
-					<Form.Control className='shadow-none' type="text" placeholder="Room name" onChange={ (event) => setCreateRoomName(event.target.value) } />
+					<Form.Control className='shadow-none' type="text" placeholder="Room name" onChange={ (event) => setRoomModalName(event.target.value) } />
 					{emptyRoomName && <p className='text-danger mb-0'>Room name can't be empty</p> }
 				</Modal.Body>
 
 				<Modal.Footer> 
-					<MdOutlineDone className='settings-icon w-15' onClick={() => setJoinRoomModal(false)}/> 
+					<MdOutlineDone className='settings-icon w-15' onClick={ () => JoinOrCreateRoom() }/> 
 				</Modal.Footer>
 			
 			</Modal>	
