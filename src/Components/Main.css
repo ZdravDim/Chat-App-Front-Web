@@ -6,6 +6,18 @@
   background-color: #292c31 !important;
 }
 
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.cursor-pointer:hover {
+  background-color: #167649 !important;
+}
+
+.cursor-pointer:active {
+  background-color: #146941 !important;
+}
+
 .w-3 {
   width: 3% !important;
 }
@@ -14,8 +26,8 @@
   width: 25% !important;
 }
 
-.w-72 {
-  width: 72% !important;
+.flex-grow {
+  flex-grow: 1;
 }
 
 .w-85 {
@@ -50,11 +62,12 @@
   color: rgba(0, 48, 2, 0.749) !important;
 }
 
+.message-width {
+  max-width: 45%;
+  width: fit-content;
+}
 
 .message-container {
-max-width: 45%;
-width: fit-content;
-padding: 0.4em 0.7em 0.4em; 
-word-wrap: break-word;
-border-radius: 5em;
+  word-wrap: break-word;
+  border-radius: 1em;
 }

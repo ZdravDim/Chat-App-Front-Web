@@ -11,6 +11,12 @@ const socket_connect = () => {
     socket.on("connect_error", onError);
 }
 
+export function joinRoom(oldRoom, newRoom) {
+    // oldRoom can be null!!!!!
+    // leave oldRoom and join newRoom
+    alert(oldRoom + " " + newRoom)
+}
+
 export const socket_disconnect = () => {
     if (socket) socket.disconnect()
 }

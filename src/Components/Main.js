@@ -14,7 +14,7 @@ import { BiExpandHorizontal } from "react-icons/bi";
 import { MdDeleteOutline, MdOutlineDone } from "react-icons/md";
 
 
-import { sendMessage, setMessageListener, removeMessageListener } from "../Socket.js"
+import { sendMessage, setMessageListener, removeMessageListener, joinRoom } from "../Socket.js"
 
 import { v4 as uuidv4 } from 'uuid'
 
@@ -22,11 +22,15 @@ function Main({onNavigation}) {
 
 	const navigate = useNavigate()
 	const { phoneNumber } = "+381..." //from jwt
+	const [showRooms, setShowRooms] = useState(true)
 	const [message, setMessage] = useState("")
 	const [settingsShow, setSettingsShow] = useState(false);
 	const [createRoomShow, setCreateRoomShow] = useState(false);
-	const inputFieldReference = useRef(null);
 	const [rooms, setRooms] = useState([])
+	const [currentRoom, setCurrentRoom] = useState(null)
+	const [createRoomName, setCreateRoomName] = useState('');
+	const [emptyRoomName, setEmptyRoomName] = useState(false)
+	const inputFieldReference = useRef(null);
 
 	const [messageHistory, setMessageHistory] = useState([]);
 
@@ -37,6 +41,12 @@ function Main({onNavigation}) {
 	useEffect(() => {
 
 		// retrieve rooms from firestore
+		const data = {
+			id: '1',
+			phoneNumber: '+38164123456',
+			message: 'This is a test message from someone to noone, bla bla bla bla this is a test message from noone to someone bla bla bla bla...'
+		}
+		setMessageHistory([data]);
 
 		setMessageListener(handleMessage);
 
@@ -66,9 +76,31 @@ function Main({onNavigation}) {
 	const createRoomVisible = () => { setCreateRoomShow(true) }
 	const createRoomHide = () => { setCreateRoomShow(false) }
 
+	const addRoom = (roomName) => {
+		setRooms(prevRooms => [...prevRooms, {
+			id: 1, // change to uuidv4
+			name: roomName
+		}])
+	}
+
 	const createRoom = () => { 
-		// ...
+
+		if (createRoomName.length) {
+			
+			addRoom(createRoomName)
+
+			setCreateRoomShow(false)
+			setEmptyRoomName(false)
+			setCreateRoomName('')
+		}
+		else setEmptyRoomName(true)
+
 	 }
+
+	const openRoom = (newRoom) => {
+		joinRoom(currentRoom, newRoom)
+		setCurrentRoom(newRoom)
+	}
 
 	const deleteAccount = async() => { 
 		
@@ -86,10 +118,6 @@ function Main({onNavigation}) {
 
 		} catch(error) { console.log(error.message) }
 
-	}
-
-	const chatView = () => {
-		// expand or hide -> adapt chat width  
 	}
 
 	const logOut = async() => {
@@ -112,24 +140,30 @@ function Main({onNavigation}) {
 			<div className='w-3 text-center'>
 				<RiLogoutBoxLine className='icon' onClick={logOut} />
 				<IoSettingsOutline className='icon' onClick={settings}/>
-				<IoAdd className='icon' onClick={createRoomVisible}/>
-				<BiExpandHorizontal className='icon' onClick={chatView}/>
+				<IoAdd className='icon' onClick={() => { setEmptyRoomName(false); createRoomVisible()}}/>
+				<BiExpandHorizontal className='icon' onClick={() => setShowRooms(!showRooms)}/>
 			</div>
 
-			<div className='h-100 w-25 text-white text-break text-center bg-custom-grey'>
-				<h2 className='my-2'>Rooms</h2>
-					{/* rooms here */}
+			{ showRooms &&
+				<div className='h-100 w-25 text-white text-break text-center bg-custom-grey'>
+				<h2 className='my-3'>Rooms</h2>
 					{rooms.map((room) => (
-						<div>id: {room["id"]}</div>
+						<div tabIndex={-1} onClick={() => openRoom(room["name"])} className='bg-success m-2 cursor-pointer'>
+							{room["name"]}
+						</div>
 					))}
-			</div>
+				</div>
+			}
 
-			<div className="d-flex flex-column h-100 w-72">
+			<div className="d-flex flex-column h-100 flex-grow">
 				<div className="flex-grow-1 mb-20">
 					<div className='p-3'>
 						{messageHistory.map((message) => (
-							<div key={message["id"]} className='text-white bg-custom-grey mb-1 mt-2 message-container'>
-								{message["phoneNumber"]}: {message["message"]}
+							<div className='message-width'>
+								<p style={{ paddingLeft: '1rem' }} className='text-white mb-0'>{message["phoneNumber"]}</p>
+								<div key={message["id"]} className='text-white bg-custom-grey mb-1 mt-2 py-2 px-3 message-container'>
+									{message["message"]}
+								</div>
 							</div>
 						))}
 					</div>
@@ -172,7 +206,7 @@ function Main({onNavigation}) {
 			</Modal>
 
 			<Modal 
-				show={ createRoomShow}
+				show={ createRoomShow }
 				onHide={ createRoomHide }
 				backdrop="static"
 				keyboard={false}
@@ -183,15 +217,15 @@ function Main({onNavigation}) {
 				</Modal.Header>
 
 				<Modal.Body>
-					<p> ... </p>
+					<Form.Control className='shadow-none' type="text" placeholder="Room name" onChange={ (event) => setCreateRoomName(event.target.value) } />
+					{emptyRoomName && <p className='text-danger mb-0'>Room name can't be empty</p> }
 				</Modal.Body>
 
 				<Modal.Footer> 
-					<MdOutlineDone className='settings-icon w-15' onClick={createRoomHide}/> 
+					<MdOutlineDone className='settings-icon w-15' onClick={ createRoom }/> 
 				</Modal.Footer>
 			
 			</Modal>	
-
 
 		</div>
 
