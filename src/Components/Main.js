@@ -44,7 +44,7 @@ function Main({onNavigation}) {
 		const data = {
 			id: '1',
 			phoneNumber: '+38164123456',
-			message: 'This is a test message from someone to noone, bla bla bla bla this is a test message from noone to someone bla bla bla bla...'
+			message: 'This is a test message from someone to no one, bla bla bla bla this is a test message from no one to someone bla bla bla bla...'
 		}
 		setMessageHistory([data]);
 
@@ -137,7 +137,7 @@ function Main({onNavigation}) {
 
 	return (
 		<div className='d-flex flex-row h-100 bg-dark'>
-			<div className='w-3 text-center'>
+			<div className='w-8 text-center'>
 				<RiLogoutBoxLine className='icon' onClick={logOut} />
 				<IoSettingsOutline className='icon' onClick={settings}/>
 				<IoAdd className='icon' onClick={() => { setEmptyRoomName(false); createRoomVisible()}}/>

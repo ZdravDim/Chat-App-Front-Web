@@ -18,8 +18,8 @@
   background-color: #146941 !important;
 }
 
-.w-3 {
-  width: 3% !important;
+.w-8 {
+  width: min(8%, 57px) !important;
 }
 
 .w-25 {
@@ -46,8 +46,8 @@
   margin-top: 1em;
   color: white;
   cursor: pointer;
-  width: min(2vw, 35px);
-  height: min(2vw, 35px);
+  width: min(80%, 35px);
+  height: min(80%, 35px);
 }
 
 .settings-icon {
