@@ -24,6 +24,7 @@ function Main({onNavigation}) {
 	const [message, setMessage] = useState("")
 	const [settingsShow, setSettingsShow] = useState(false);
 	const inputFieldReference = useRef(null);
+	const [rooms, setRooms] = useState([])
 
 	const [messageHistory, setMessageHistory] = useState([]);
 
@@ -32,6 +33,8 @@ function Main({onNavigation}) {
 	};
 
 	useEffect(() => {
+
+		// retrieve rooms from firestore
 
 		setMessageListener(handleMessage);
 
@@ -104,7 +107,10 @@ function Main({onNavigation}) {
 
 			<div className='h-100 w-25 text-white text-break text-center bg-custom-grey'>
 				<h2 className='my-2'>Rooms</h2>
-				{/* rooms here */}
+					{/* rooms here */}
+					{rooms.map((room) => (
+						<div>id: {room["id"]}</div>
+					))}
 			</div>
 
 			<div className="d-flex flex-column h-100 w-72">
