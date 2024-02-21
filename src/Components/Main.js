@@ -9,9 +9,10 @@ import axios from 'axios'
 
 import './Main.css'
 import { RiLogoutBoxLine } from "react-icons/ri";
-import { IoSettingsOutline, IoSend } from "react-icons/io5";
+import { IoSettingsOutline, IoSend, IoAdd } from "react-icons/io5";
 import { BiExpandHorizontal } from "react-icons/bi";
-import { MdDeleteOutline } from "react-icons/md";
+import { MdDeleteOutline, MdOutlineDone } from "react-icons/md";
+
 
 import { sendMessage, setMessageListener, removeMessageListener } from "../Socket.js"
 
@@ -23,6 +24,7 @@ function Main({onNavigation}) {
 	const { phoneNumber } = "+381..." //from jwt
 	const [message, setMessage] = useState("")
 	const [settingsShow, setSettingsShow] = useState(false);
+	const [createRoomShow, setCreateRoomShow] = useState(false);
 	const inputFieldReference = useRef(null);
 	const [rooms, setRooms] = useState([])
 
@@ -59,6 +61,14 @@ function Main({onNavigation}) {
 
 	const settings = () => { setSettingsShow(true) }
 	const settingsClose = () => { setSettingsShow(false) }
+
+
+	const createRoomVisible = () => { setCreateRoomShow(true) }
+	const createRoomHide = () => { setCreateRoomShow(false) }
+
+	const createRoom = () => { 
+		// ...
+	 }
 
 	const deleteAccount = async() => { 
 		
@@ -102,6 +112,7 @@ function Main({onNavigation}) {
 			<div className='w-3 text-center'>
 				<RiLogoutBoxLine className='icon' onClick={logOut} />
 				<IoSettingsOutline className='icon' onClick={settings}/>
+				<IoAdd className='icon' onClick={createRoomVisible}/>
 				<BiExpandHorizontal className='icon' onClick={chatView}/>
 			</div>
 
@@ -159,6 +170,29 @@ function Main({onNavigation}) {
 				</Modal.Footer>
 				
 			</Modal>
+
+			<Modal 
+				show={ createRoomShow}
+				onHide={ createRoomHide }
+				backdrop="static"
+				keyboard={false}
+				centered>
+
+				<Modal.Header closeButton> 
+					<Modal.Title>Create new Room</Modal.Title> 
+				</Modal.Header>
+
+				<Modal.Body>
+					<p> ... </p>
+				</Modal.Body>
+
+				<Modal.Footer> 
+					<MdOutlineDone className='settings-icon w-15' onClick={createRoomHide}/> 
+				</Modal.Footer>
+			
+			</Modal>	
+
+
 		</div>
 
 	)
