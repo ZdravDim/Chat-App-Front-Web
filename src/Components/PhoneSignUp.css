@@ -10,6 +10,6 @@
     border-radius: 0 !important;
 }
 
-.custom-input:focus {
-    box-shadow: none !important;
+.custom-input:hover, .custom-input:focus {
+    border-color: #28a745 !important;
 }
