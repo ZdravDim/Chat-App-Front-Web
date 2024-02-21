@@ -59,18 +59,20 @@ function PhoneSignIn() {
 
         setPhoneTaken(false)
 
-        try {
-            setIsActive(true)
-            const recaptcha = new RecaptchaVerifier(auth, "recaptcha", {})
-            const confirmation = await signInWithPhoneNumber(auth, phoneNumber, recaptcha)
-            setDisplayLevel(1)
-            console.log(confirmation)
-            setUser(confirmation)
+        setIsActive(true)
+        let recaptcha = new RecaptchaVerifier(auth, "recaptcha", {})
 
-        } catch(error) {
+        signInWithPhoneNumber(auth, phoneNumber, recaptcha)
+        .then((confirmationResult) => {
+
+            setDisplayLevel(1)
+            console.log(confirmationResult)
+            setUser(confirmationResult)
+        })
+        .catch((error) => {
             console.log(error.message)
             setInvalidPhone(true)
-        }
+        })
         
     }
     
