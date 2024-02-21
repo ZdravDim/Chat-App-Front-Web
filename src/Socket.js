@@ -12,9 +12,14 @@ const socket_connect = () => {
 }
 
 export function joinRoom(oldRoom, newRoom) {
-    // oldRoom can be null!!!!!
-    // leave oldRoom and join newRoom
     alert(oldRoom + " " + newRoom)
+    if (socket) {
+        alert(socket.rooms)
+        if (oldRoom) socket.emit('leave', oldRoom)
+        socket.emit('join', newRoom)
+        alert(socket.rooms)
+    }
+    else console.log("Cannot join room: Socket is null!")
 }
 
 export const socket_disconnect = () => {
