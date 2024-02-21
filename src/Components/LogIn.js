@@ -16,7 +16,7 @@ function LogIn({onNavigation}) {
     const [password, setPassword] = useState("")
     const [invalidCredentials, setInvalidCredentials] = useState(false)
 
-    const logInSubmit = (event) => {
+    const logInSubmit = async(event) => {
         event.preventDefault()
 
         var body = {
@@ -24,20 +24,24 @@ function LogIn({onNavigation}) {
             password: sha256(password)
         };
 
-        axios.post('http://localhost:3001/api/login', body, { withCredentials: true })
-        .then((response) => {
+        try {
+
+            const response = await axios.post('http://localhost:3001/api/login', body, { withCredentials: true })
+
             if (response.status === 200) {
+
                 console.log("Login successful.")
                 onNavigation()
-                navigate("/");
-            } else {
-                console.log("Login failed: Invalid credentials.");
+                navigate("/")
+            }
+            else {
+
+                console.log("Login failed: Invalid credentials.")
                 setInvalidCredentials(true)
             }
-        })
-        .catch((error) => {
-            console.log(error);
-        });
+        }
+        catch(error) { console.log(error.message) }
+        
     }
 
     return (

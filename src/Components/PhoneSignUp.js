@@ -8,11 +8,12 @@ import 'react-phone-input-2/lib/style.css'
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
 
-import { auth, RecaptchaVerifier, signInWithPhoneNumber, db, addDoc, collection, query, where, getDocs } from '../Firebase.config'
+import { auth, RecaptchaVerifier, signInWithPhoneNumber } from '../Firebase.config'
 
 import { sha256 } from 'js-sha256';
 
 import './PhoneSignUp.css'
+import axios from 'axios'
 
 
 function PhoneSignIn() {
@@ -29,20 +30,22 @@ function PhoneSignIn() {
     const [invalidPhone, setInvalidPhone] = useState(false)
     const [phoneTaken, setPhoneTaken] = useState(false)
     const [isActive, setIsActive] = useState(false)
+
     const phoneNumberTaken = async() => {
 
         try {
-            const q = query(collection(db, "users"), where("phoneNumber", "==", phoneNumber));
 
-            const querySnapshot = await getDocs(q);
+            const data = { phoneNumber: phoneNumber }
+            
+            const response = await axios.post('http://localhost:3001/api/phone-available', data, { withCredentials: true })
 
-            if (!querySnapshot.empty) return true
+            if (response.status === 200) return false
 
-            return false
+            return true
         }
         catch (error) {
-            console.log(error)
-            return false
+            console.log(error.message)
+            return true
         }
     }
 
@@ -60,12 +63,12 @@ function PhoneSignIn() {
             setIsActive(true)
             const recaptcha = new RecaptchaVerifier(auth, "recaptcha", {})
             const confirmation = await signInWithPhoneNumber(auth, phoneNumber, recaptcha)
-            setDisplayLevel(1);
+            setDisplayLevel(1)
             console.log(confirmation)
             setUser(confirmation)
 
-        } catch(err) {
-            console.error(err)
+        } catch(error) {
+            console.log(error.message)
             setInvalidPhone(true)
         }
         
@@ -80,8 +83,8 @@ function PhoneSignIn() {
             const data = await user.confirm(otp.join(''))
             setDisplayLevel(2)
             console.log(data)
-        } catch (err) {
-            console.error(err)
+        } catch (error) {
+            console.log(error.message)
         }
     }
 
@@ -99,9 +102,14 @@ function PhoneSignIn() {
             password: hashedPassword 
         };
 
-        await addDoc(collection(db, 'users'), userData);
+        try {
+            const response = await axios.post('http://localhost:3001/api/sign-up', userData, { withCredentials: true });
+            if (response.status === 200) setDisplayLevel(3);
+        }
+        catch(error) {
+            console.log(error.message)
+        }
         
-        setDisplayLevel(3);
     }
 
     return (

@@ -54,14 +54,17 @@ function Main({onNavigation}) {
 	}
 
 
-	const settings = async() => { setSettingsShow(true)	}
-	const settingsClose = async() => {setSettingsShow(false)}
+	const settings = () => { setSettingsShow(true) }
+	const settingsClose = () => { setSettingsShow(false) }
 
 	const deleteAccount = async() => { 
 		
 		try {
 
-			const response = await axios.delete('http://localhost:3001/api/deleteAccount', { withCredentials: true })
+			// call /auth to get new access_token if it expired before trying to delete to avoid bugs
+			await axios.post('http://localhost:3001/api/auth', null, { withCredentials: true });
+			
+			const response = await axios.delete('http://localhost:3001/api/delete-account', { withCredentials: true })
 
 			if (response.status === 200) {
 				onNavigation()
@@ -72,7 +75,7 @@ function Main({onNavigation}) {
 
 	}
 
-	const chatView = async() => {
+	const chatView = () => {
 		// expand or hide -> adapt chat width  
 	}
 
@@ -126,6 +129,7 @@ function Main({onNavigation}) {
 					<Button type="submit" className="btn-success rounded-0"><IoSend className='text-white m-1'/></Button>
 				</Form>
 			</div>
+
 			<Modal 
 				show={ settingsShow }
 				onHide={ settingsClose }
@@ -148,7 +152,6 @@ function Main({onNavigation}) {
 					<Button className='btn-success' onClick={settingsClose}>Close</Button>
 				</Modal.Footer>
 				
-			
 			</Modal>
 		</div>
 
