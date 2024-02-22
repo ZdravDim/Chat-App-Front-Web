@@ -11,21 +11,27 @@ const socket_connect = () => {
     socket.on("connect_error", onError);
 }
 
-export function joinRoom(oldRoom, newRoom) {
+export function joinRoom(oldRoom, newRoom, phoneNumber, createRoom = false) {
     if (socket) {
         if (oldRoom) socket.emit('leave', oldRoom)
-        socket.emit('join', newRoom)
+        socket.emit('join', phoneNumber, newRoom, createRoom)
     }
     else console.log("Cannot join room: Socket is null!")
+}
+
+export function leaveRoom(phoneNumber, roomName) {
+    if (socket) socket.emit('leave', phoneNumber, roomName)
+    else console.log("Cannot leave room: Socket is null!")
 }
 
 export const socket_disconnect = () => {
     if (socket) socket.disconnect()
 }
 
-export function sendMessage(message, phoneNumber, id) {
+export function sendMessage(roomName, message, phoneNumber, id) {
     if (socket) {
-		socket.emit('message', {
+		socket.emit('message-to-room', {
+            roomName: roomName,
 			phoneNumber: phoneNumber,
 			message: message,
 			id: id

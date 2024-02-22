@@ -14,14 +14,15 @@ import { BiExpandHorizontal } from "react-icons/bi";
 import { MdDeleteOutline, MdOutlineDone } from "react-icons/md";
 
 
-import { sendMessage, setMessageListener, removeMessageListener, joinRoom } from "../Socket.js"
+import { sendMessage, setMessageListener, removeMessageListener, joinRoom, leaveRoom } from "../Socket.js"
 
 import { v4 as uuidv4 } from 'uuid'
 
 function Main({onNavigation}) {
 
 	const navigate = useNavigate()
-	const { phoneNumber } = "+381..." //from jwt
+
+	const [userData, setUserData] = useState(null)
 
 	const [showRooms, setShowRooms] = useState(true)
 
@@ -47,13 +48,30 @@ function Main({onNavigation}) {
 
 	useEffect(() => {
 
+		async function fetchUserData() {
+			try {
+				const response = await axios.post('http://localhost:3001/api/user-data', null, { withCredentials: true })
+				if (response.status === 200) setUserData(response.data)
+			}
+			catch(error) {
+				console.log(error.message)
+			}
+		}
+
+		async function fetchUserRooms() {
+			try {
+				const response = await axios.post('http://localhost:3001/api/user-rooms', null, { withCredentials: true })
+				if (response.status === 200) setRooms(response.data.rooms)
+			}
+			catch(error) {
+				console.log(error.message)
+			}
+		}
+
+		fetchUserData()
+		fetchUserRooms()
+
 		// retrieve rooms from firestore
-		// const data = {
-		// 	id: '1',
-		// 	phoneNumber: '+38164123456',
-		// 	message: 'This is a test message from someone to no one, bla bla bla bla this is a test message from no one to someone bla bla bla bla...'
-		// }
-		// setMessageHistory([data]);
 
 		setMessageListener(handleMessage);
 
@@ -68,7 +86,7 @@ function Main({onNavigation}) {
 		const id = uuidv4()
 
 		// send to socket
-		sendMessage(message, phoneNumber, id)
+		sendMessage(currentRoom, message, userData.phoneNumber, id)
 	
 		// Clear the message input field after sending
 		setMessage("");
@@ -76,26 +94,60 @@ function Main({onNavigation}) {
 	}
 
 	const addRoom = (roomName) => {
-		setRooms(prevRooms => [...prevRooms, {
-			id: 1, // change to uuidv4
-			name: roomName
-		}])
+		setRooms(prevRooms => [...prevRooms, roomName])
 	}
 
-	const JoinOrCreateRoom = (createRoom = false) => {
+	const JoinOrCreateRoom = async(createRoom = false) => {
 
 		if (RoomModalName.length) {
 			
-			if (createRoom) joinRoom(currentRoom, RoomModalName) // check if this creates a room
-			addRoom(RoomModalName)
-			setCurrentRoom(RoomModalName)
+			const postData = { roomName: RoomModalName }
 
-			setCreateRoomModal(false)
-			setEmptyRoomName(false)
-			setRoomModalName('')
+			try {
+				const response = await axios.post('http://localhost:3001/api/room-exists', postData, { withCredentials: true })
+
+				if (response.data.roomExists) {
+
+					if (createRoom) {
+						// ...
+						alert("Soba vec postoji")
+						return
+					}
+					joinRoom(currentRoom, RoomModalName, userData.phoneNumber)
+				}
+				else {
+
+					if (!createRoom) {
+						// ...
+						alert("Soba ne postoji")
+						return
+					}
+					joinRoom(currentRoom, RoomModalName, userData.phoneNumber, true)
+				}
+
+				// setMessageHistory mora nekako
+
+				addRoom(RoomModalName)
+				setCurrentRoom(RoomModalName)
+			}
+			catch(error) {
+				console.log(error.message)
+			}
+			finally {
+				setCreateRoomModal(false)
+				setJoinRoomModal(false)
+				setEmptyRoomName(false)
+				setRoomModalName('')
+			}
 		}
 		else setEmptyRoomName(true)
 
+	}
+
+	const leaveCurrentRoom = () => {
+		leaveRoom(userData.phoneNumber, currentRoom)
+		setRooms(rooms => rooms.filter(room => room !== currentRoom))
+		setCurrentRoom(null)
 	}
 
 	const openRoom = (newRoom) => {
@@ -150,38 +202,45 @@ function Main({onNavigation}) {
 				<div className='h-100 w-25 text-white text-break text-center bg-custom-grey'>
 				<h2 className='my-3'>Rooms</h2>
 					{rooms.map((room) => (
-						<div tabIndex={-1} onClick={() => openRoom(room["name"])} className='bg-success m-2 cursor-pointer'>
-							{room["name"]}
+						<div key={room} tabIndex={-1} onClick={() => openRoom(room)} className='bg-success m-2 cursor-pointer'>
+							{room}
 						</div>
 					))}
 				</div>
 			}
 
-			<div className="d-flex flex-column h-100 flex-grow">
-				<div className="flex-grow-1 mb-20">
-					<div className='p-3'>
-						{messageHistory.map((message) => (
-							<div className='message-width'>
-								<p style={{ paddingLeft: '1rem' }} className='text-white mb-0'>{message["phoneNumber"]}</p>
-								<div key={message["id"]} className='text-white bg-custom-grey mb-1 mt-2 py-2 px-3 message-container'>
-									{message["message"]}
+			{ currentRoom &&
+				<div className="d-flex flex-column h-100 flex-grow text-white">
+					<div className="p-3 flex-grow-1 mb-20">
+						<div style={{height: 60}}>
+							<h3 className='text-center d-inline-block'>{currentRoom}</h3>
+							<Button style={{height: 40, width: 70, float: 'right'}} className='btn btn-danger rounded-0 d-inline-block' onClick={() => leaveCurrentRoom()}>Leave</Button>
+						</div>
+
+						<div className='pt-3'>
+							{messageHistory.map((message) => (
+								<div className='message-width'>
+									<p style={{ paddingLeft: '1rem' }} className='mb-0'>{message.phoneNumber}</p>
+									<div key={message.id} className='text-white bg-custom-grey mb-1 mt-2 py-2 px-3 message-container'>
+										{message.message}
+									</div>
 								</div>
-							</div>
-						))}
+							))}
+						</div>
 					</div>
+				
+					<Form onSubmit={sendMessageToRoom} className='d-flex w-100 p-3'>
+						<Form.Control
+						ref={inputFieldReference}
+						type="text"
+						placeholder="Enter a message..."
+						className="shadow-none rounded-0"
+						onChange={(event) => setMessage(event.target.value)}
+						/>  
+						<Button type="submit" className="btn-success rounded-0"><IoSend className='text-white m-1'/></Button>
+					</Form>
 				</div>
-			
-				<Form onSubmit={sendMessageToRoom} className='d-flex w-100 p-3'>
-					<Form.Control
-					ref={inputFieldReference}
-					type="text"
-					placeholder="Enter a message..."
-					className="shadow-none rounded-0"
-					onChange={(event) => setMessage(event.target.value)}
-					/>  
-					<Button type="submit" className="btn-success rounded-0"><IoSend className='text-white m-1'/></Button>
-				</Form>
-			</div>
+			}
 
 			<Modal 
 				show={ settingsModal }
