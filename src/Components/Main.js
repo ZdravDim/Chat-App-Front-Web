@@ -16,8 +16,6 @@ import { MdDeleteOutline, MdOutlineDone } from "react-icons/md";
 
 import { sendMessage, setMessageListener, removeMessageListener, joinRoom, leaveRoom } from "../Socket.js"
 
-import { v4 as uuidv4 } from 'uuid'
-
 function Main({onNavigation}) {
 
 	const navigate = useNavigate()
@@ -80,17 +78,17 @@ function Main({onNavigation}) {
 	  }, []);
 
 	const sendMessageToRoom = (event) => {
-		event.preventDefault();
+
+		event.preventDefault()
 
 		if (!message.length) return
-		const id = uuidv4()
 
 		// send to socket
-		sendMessage(currentRoom, message, userData.phoneNumber, id)
+		sendMessage(currentRoom, message, userData.phoneNumber)
 	
 		// Clear the message input field after sending
-		setMessage("");
-		inputFieldReference.current.value = "";
+		setMessage("")
+		inputFieldReference.current.value = ""
 	}
 
 	const addRoom = (roomName) => {
@@ -151,7 +149,7 @@ function Main({onNavigation}) {
 	}
 
 	const openRoom = (newRoom) => {
-		joinRoom(currentRoom, newRoom)
+		joinRoom(currentRoom, newRoom, userData.phoneNumber)
 		setCurrentRoom(newRoom)
 	}
 
@@ -199,10 +197,10 @@ function Main({onNavigation}) {
 			</div>
 
 			{ showRooms &&
-				<div className='h-100 w-25 text-white text-break text-center bg-custom-grey'>
-				<h2 className='my-3'>Rooms</h2>
+				<div className='h-100 w-20 text-white text-break text-center bg-custom-grey'>
+				<h1 className='mt-3 mb-5'>Rooms</h1>
 					{rooms.map((room) => (
-						<div key={room} tabIndex={-1} onClick={() => openRoom(room)} className='bg-success m-2 cursor-pointer'>
+						<div style={{ fontSize: 22 }} ey={room} tabIndex={-1} onClick={() => openRoom(room)} className='rounded-1 bg-success my-2 mx-3 cursor-pointer p-3'>
 							{room}
 						</div>
 					))}
@@ -218,14 +216,20 @@ function Main({onNavigation}) {
 						</div>
 
 						<div className='pt-3'>
-							{messageHistory.map((message) => (
-								<div className='message-width'>
-									<p style={{ paddingLeft: '1rem' }} className='mb-0'>{message.phoneNumber}</p>
-									<div key={message.id} className='text-white bg-custom-grey mb-1 mt-2 py-2 px-3 message-container'>
-										{message.message}
+							{messageHistory.map((message) => {
+								const messageDate = new Date(message.timestamp);
+								const formattedHours = String(messageDate.getHours()).padStart(2, '0');
+    							const formattedMinutes = String(messageDate.getMinutes()).padStart(2, '0');
+								return (
+									<div className='' key={message.id}>
+										<div className='message-width message-container text-white bg-custom-grey mb-1 mt-2 py-2 px-3'>
+											<p className='mb-0' style={{ color: userData.userColor }}>{message.senderNumber}</p>
+											<p className='mb-0'>{message.messageBody}</p>
+											<p className='mb-0 text-secondary text-end'>{formattedHours}:{formattedMinutes}</p>
+										</div>
 									</div>
-								</div>
-							))}
+								);
+							})}
 						</div>
 					</div>
 				

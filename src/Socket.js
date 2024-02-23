@@ -28,13 +28,12 @@ export const socket_disconnect = () => {
     if (socket) socket.disconnect()
 }
 
-export function sendMessage(roomName, message, phoneNumber, id) {
+export function sendMessage(roomName, messageBody, senderNumber) {
     if (socket) {
 		socket.emit('message-to-room', {
             roomName: roomName,
-			phoneNumber: phoneNumber,
-			message: message,
-			id: id
+			senderNumber: senderNumber,
+			messageBody: messageBody
 		});
     }
     else console.log("Error: Message not sent (socket = null).")
