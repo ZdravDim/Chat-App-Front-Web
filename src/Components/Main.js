@@ -40,6 +40,8 @@ function Main({onNavigation}) {
 
 	const [messageHistory, setMessageHistory] = useState([]);
 
+	const [maxHeight, setMaxHeight] = useState(window.innerHeight);
+
 	const handleMessage = (message) => {
 		setMessageHistory(prevMessages => [...prevMessages, message]);
 	};
@@ -69,11 +71,18 @@ function Main({onNavigation}) {
 		fetchUserData()
 		fetchUserRooms()
 
-		// retrieve rooms from firestore
+		const updateMaxHeight = () => { setMaxHeight(window.innerHeight) }
+
+        updateMaxHeight();
+
+        window.addEventListener('resize', updateMaxHeight);
 
 		setMessageListener(handleMessage);
 
-		return () => { removeMessageListener(handleMessage); };
+		return () => {
+			removeMessageListener(handleMessage)
+			window.removeEventListener('resize', updateMaxHeight)
+		};
 
 	  }, []);
 
@@ -84,7 +93,7 @@ function Main({onNavigation}) {
 		if (!message.length) return
 
 		// send to socket
-		sendMessage(currentRoom, message, userData.phoneNumber)
+		sendMessage(currentRoom, message, userData.phoneNumber, userData.userColor)
 	
 		// Clear the message input field after sending
 		setMessage("")
@@ -201,12 +210,14 @@ function Main({onNavigation}) {
 
 			{ showRooms &&
 				<div className='h-100 w-20 text-white text-break text-center bg-custom-grey'>
-				<h1 className='mt-3 mb-5'>Rooms</h1>
-					{rooms.map((room) => (
-						<div style={{ fontSize: 22 }} ey={room} tabIndex={-1} onClick={() => openRoom(room)} className='rounded-1 bg-success my-2 mx-3 cursor-pointer p-3'>
-							{room}
-						</div>
-					))}
+					<h1 className='mt-3 mb-4'>Rooms</h1>
+					<div style={{ maxHeight: maxHeight - 150, overflowY: 'auto' }}>
+						{rooms.map((room) => (
+							<div style={{ fontSize: 22 }} ey={room} tabIndex={-1} onClick={() => openRoom(room)} className='rounded-1 bg-success my-2 mx-3 cursor-pointer p-3'>
+								{room}
+							</div>
+						))}
+					</div>
 				</div>
 			}
 
@@ -218,15 +229,15 @@ function Main({onNavigation}) {
 							<Button style={{height: 40, width: 70, float: 'right'}} className='btn btn-danger rounded-0 d-inline-block' onClick={() => leaveCurrentRoom()}>Leave</Button>
 						</div>
 
-						<div className='pt-3'>
+						<div className='pt-3' style={{ maxHeight: maxHeight - 180, overflowY: 'auto' }}>
 							{messageHistory.map((message) => {
 								const messageDate = new Date(message.timestamp);
 								const formattedHours = String(messageDate.getHours()).padStart(2, '0');
     							const formattedMinutes = String(messageDate.getMinutes()).padStart(2, '0');
 								return (
-									<div className='' key={message.id}>
-										<div className='message-width message-container text-white bg-custom-grey mb-1 mt-2 py-2 px-3'>
-											<p className='mb-0' style={{ color: userData.userColor }}>{message.senderNumber}</p>
+									<div key={message.id} className='d-flex flex-column'>
+										<div className={`message-width message-container text-white bg-custom-grey mb-1 mt-2 py-2 px-3 ${message.senderNumber === userData.phoneNumber ? 'align-self-start' : 'align-self-end'}`}>
+											<p className='mb-0' style={{ color: message.senderColor }}>{message.senderNumber}</p>
 											<p className='mb-0'>{message.messageBody}</p>
 											<p className='mb-0 text-secondary text-end'>{formattedHours}:{formattedMinutes}</p>
 										</div>

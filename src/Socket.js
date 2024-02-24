@@ -18,7 +18,7 @@ export async function joinRoom(oldRoom, newRoom, phoneNumber, createRoom) {
         socket.emit('join', phoneNumber, newRoom, createRoom)
 
         try {
-            const response = await axios.post("http://localhost:3001/api/room-messages", newRoom, { withCredentials: true })
+            const response = await axios.post("http://localhost:3001/api/room-messages", { roomName: newRoom }, { withCredentials: true })
             if (response.status === 200) return response.data.messagesArray
             return []
         } 
@@ -39,11 +39,12 @@ export const socket_disconnect = () => {
     if (socket) socket.disconnect()
 }
 
-export function sendMessage(roomName, messageBody, senderNumber) {
+export function sendMessage(roomName, messageBody, senderNumber, senderColor) {
     if (socket) {
 		socket.emit('message-to-room', {
             roomName: roomName,
 			senderNumber: senderNumber,
+            senderColor: senderColor,
 			messageBody: messageBody
 		});
     }
