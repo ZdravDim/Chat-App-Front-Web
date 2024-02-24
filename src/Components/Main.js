@@ -35,6 +35,7 @@ function Main({onNavigation}) {
 
 	const [RoomModalName, setRoomModalName] = useState('');
 	const [emptyRoomName, setEmptyRoomName] = useState(false)
+	const [roomNameError, setRoomNameError] = useState(false)
 	
 	const inputFieldReference = useRef(null);
 
@@ -42,9 +43,7 @@ function Main({onNavigation}) {
 
 	const [maxHeight, setMaxHeight] = useState(window.innerHeight);
 
-	const handleMessage = (message) => {
-		setMessageHistory(prevMessages => [...prevMessages, message]);
-	};
+	const handleMessage = (message) => { setMessageHistory(prevMessages => [...prevMessages, message]); };
 
 	useEffect(() => {
 
@@ -100,8 +99,13 @@ function Main({onNavigation}) {
 		inputFieldReference.current.value = ""
 	}
 
-	const addRoom = (roomName) => {
-		setRooms(prevRooms => [...prevRooms, roomName])
+	const addRoom = (roomName) => { setRooms(prevRooms => [...prevRooms, roomName]) }
+
+	const helperFunction = () => {
+		setCreateRoomModal(false)
+		setJoinRoomModal(false)
+		setEmptyRoomName(false)
+		setRoomNameError(false)
 	}
 
 	const JoinOrCreateRoom = async(createRoom = false) => {
@@ -116,38 +120,32 @@ function Main({onNavigation}) {
 				if (response.data.roomExists) {
 
 					if (createRoom) {
-						// ...
-						alert("Soba vec postoji")
+						setRoomNameError(true)
 						return
 					}
 					const room_messages = await joinRoom(currentRoom, RoomModalName, userData.phoneNumber, false)
 					setMessageHistory(room_messages)
+					helperFunction()
 				}
 				else {
 
 					if (!createRoom) {
-						// ...
-						alert("Soba ne postoji")
+						setRoomNameError(true)
 						return
 					}
 					const room_messages = await joinRoom(currentRoom, RoomModalName, userData.phoneNumber, true)
 					setMessageHistory(room_messages)
 				}
 
-				// setMessageHistory mora nekako
-
 				addRoom(RoomModalName)
 				setCurrentRoom(RoomModalName)
+				helperFunction()
 			}
 			catch(error) {
 				console.log(error.message)
+				helperFunction()
 			}
-			finally {
-				setCreateRoomModal(false)
-				setJoinRoomModal(false)
-				setEmptyRoomName(false)
-				setRoomModalName('')
-			}
+			finally { setRoomModalName('') }
 		}
 		else setEmptyRoomName(true)
 
@@ -202,9 +200,9 @@ function Main({onNavigation}) {
 		<div className='d-flex flex-row h-100 bg-dark'>
 			<div className='w-8 text-center'>
 				<RiLogoutBoxLine className='icon' onClick={logOut} />
-				<RiLoginBoxLine className='icon' onClick={ () => { setEmptyRoomName(false); setJoinRoomModal(true) }}/>
+				<RiLoginBoxLine className='icon' onClick={ () => { setEmptyRoomName(false); setRoomNameError(false); setJoinRoomModal(true) }}/>
 				<IoSettingsOutline className='icon' onClick= { () => setSettingsModal(true) }/>
-				<IoAdd className='icon' onClick={() => { setEmptyRoomName(false); setCreateRoomModal(true)}}/>
+				<IoAdd className='icon' onClick={() => { setEmptyRoomName(false); setRoomNameError(false); setCreateRoomModal(true)}}/>
 				<BiExpandHorizontal className='icon' onClick={() => setShowRooms(!showRooms)}/>
 			</div>
 
@@ -297,7 +295,8 @@ function Main({onNavigation}) {
 
 				<Modal.Body>
 					<Form.Control className='shadow-none' type="text" placeholder="Room name" onChange={ (event) => setRoomModalName(event.target.value) } />
-					{emptyRoomName && <p className='text-danger mb-0'>Room name can't be empty</p> }
+					{ emptyRoomName && <p className='text-danger mb-0'>Room name can't be empty</p> }
+					{ roomNameError && <p className='text-danger mb-0'>Room already exists</p> }
 				</Modal.Body>
 
 				<Modal.Footer> 
@@ -305,7 +304,6 @@ function Main({onNavigation}) {
 				</Modal.Footer>
 			
 			</Modal>	
-
 
 			<Modal 
 				show={ joinRoomModal }
@@ -320,17 +318,15 @@ function Main({onNavigation}) {
 
 				<Modal.Body>
 					<Form.Control className='shadow-none' type="text" placeholder="Room name" onChange={ (event) => setRoomModalName(event.target.value) } />
-					{emptyRoomName && <p className='text-danger mb-0'>Room name can't be empty</p> }
+					{ emptyRoomName && <p className='text-danger mb-0'>Room name can't be empty</p> }
+					{ roomNameError && <p className='text-danger mb-0'>Room does not exist</p> }
 				</Modal.Body>
 
 				<Modal.Footer> 
 					<MdOutlineDone className='settings-icon w-15' onClick={ () => JoinOrCreateRoom() }/> 
 				</Modal.Footer>
 			
-			</Modal>	
-
-
-
+			</Modal>
 			
 		</div>
 
