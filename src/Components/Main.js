@@ -111,7 +111,8 @@ function Main({onNavigation}) {
 						alert("Soba vec postoji")
 						return
 					}
-					joinRoom(currentRoom, RoomModalName, userData.phoneNumber)
+					const room_messages = await joinRoom(currentRoom, RoomModalName, userData.phoneNumber, false)
+					setMessageHistory(room_messages)
 				}
 				else {
 
@@ -120,7 +121,8 @@ function Main({onNavigation}) {
 						alert("Soba ne postoji")
 						return
 					}
-					joinRoom(currentRoom, RoomModalName, userData.phoneNumber, true)
+					const room_messages = await joinRoom(currentRoom, RoomModalName, userData.phoneNumber, true)
+					setMessageHistory(room_messages)
 				}
 
 				// setMessageHistory mora nekako
@@ -148,8 +150,9 @@ function Main({onNavigation}) {
 		setCurrentRoom(null)
 	}
 
-	const openRoom = (newRoom) => {
-		joinRoom(currentRoom, newRoom, userData.phoneNumber)
+	const openRoom = async(newRoom) => {
+		const room_messages = await joinRoom(currentRoom, newRoom, userData.phoneNumber, false)
+		setMessageHistory(room_messages)
 		setCurrentRoom(newRoom)
 	}
 

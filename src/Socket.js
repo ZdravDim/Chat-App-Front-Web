@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { io } from 'socket.io-client';
 
 let socket = null;
@@ -11,16 +12,26 @@ const socket_connect = () => {
     socket.on("connect_error", onError);
 }
 
-export function joinRoom(oldRoom, newRoom, phoneNumber, createRoom = false) {
+export async function joinRoom(oldRoom, newRoom, phoneNumber, createRoom) {
     if (socket) {
-        if (oldRoom) socket.emit('leave', oldRoom)
+        if (oldRoom) socket.emit('leave', phoneNumber, oldRoom, false)
         socket.emit('join', phoneNumber, newRoom, createRoom)
+
+        try {
+            const response = await axios.post("http://localhost:3001/api/room-messages", newRoom, { withCredentials: true })
+            if (response.status === 200) return response.data.messagesArray
+            return []
+        } 
+        catch(error) {
+            console.log("Error loading room messages" + error.message)
+            return []
+        }
     }
     else console.log("Cannot join room: Socket is null!")
 }
 
 export function leaveRoom(phoneNumber, roomName) {
-    if (socket) socket.emit('leave', phoneNumber, roomName)
+    if (socket) socket.emit('leave', phoneNumber, roomName, true)
     else console.log("Cannot leave room: Socket is null!")
 }
 
@@ -39,7 +50,7 @@ export function sendMessage(roomName, messageBody, senderNumber) {
     else console.log("Error: Message not sent (socket = null).")
 }
 
-let messageListener = null;
+let messageListener = null
 
 // Show new message to screen (push to messageHistory array)
 function handleIncomingMessage(newMessage) { if (messageListener && typeof messageListener === 'function') messageListener(newMessage) }
