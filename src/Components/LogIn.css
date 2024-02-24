@@ -5,3 +5,16 @@
 .custom-input:focus {
     box-shadow: none !important;
 }
+
+.w-30 {
+    width: 30% !important;
+}
+
+.h-70 {
+    height: 65% !important;
+}
+
+.custom-gradient {
+    background: rgb(45,45,45);
+    background: radial-gradient(circle, rgba(45,45,45,1) 20%, rgba(0,0,0,1) 100%);
+}

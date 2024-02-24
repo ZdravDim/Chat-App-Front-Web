@@ -45,31 +45,34 @@ function LogIn({onNavigation}) {
     }
 
     return (
-        <div className='d-flex flex-column align-items-center justify-content-center h-100'>
-            <Form onSubmit={logInSubmit}>
-                <Form.Label>Phone number</Form.Label>
-                <PhoneInput
-                className="w-auto mb-1"
-                country={"rs"}
-                value={phoneNumber}
-                onChange={(phone) => setPhone("+" + phone)}
-                inputClass="custom-input"
-                buttonClass="custom-input"
-                />
+        <div className='d-flex flex-column align-items-center justify-content-center h-100 custom-gradient'>
+            <div className='d-flex flex-column align-items-center justify-content-center rounded-4 w-30 h-70 bg-white'>
+                <h1 style={{ fontSize: 40 }} className='mb-5 fw-bold text-dark'>LogIn to Chat App</h1>
+                <Form onSubmit={logInSubmit}>
+                    <Form.Label>Phone number</Form.Label>
+                    <PhoneInput
+                    className="w-auto mb-1"
+                    country={"rs"}
+                    value={phoneNumber}
+                    onChange={(phone) => setPhone("+" + phone)}
+                    inputClass="custom-input"
+                    buttonClass="custom-input"
+                    />
 
-                <Form.Group className='w-300'>
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control className='shadow-none rounded-0' size="sm" type="password" onChange={(event) => setPassword(event.target.value)} required />
-                </Form.Group>
+                    <Form.Group className='w-300'>
+                        <Form.Label>Password</Form.Label>
+                        <Form.Control className='shadow-none rounded-0' size="sm" type="password" onChange={(event) => setPassword(event.target.value)} required />
+                    </Form.Group>
 
-                { invalidCredentials &&
-                    <p className='text-center text-danger my-1'>Invalid credentials</p>
-                }
+                    { invalidCredentials &&
+                        <p className='text-center text-danger my-1'>Invalid credentials</p>
+                    }
 
-                <Button type="submit" className='w-300 mt-3 rounded-0 btn-success'>Login</Button>
-                <p className='text-center my-2'>Don't have an account? <Link to="/sign-up" className="text-success">Sign up</Link> </p>
-            
-            </Form>
+                    <Button type="submit" className='w-300 mt-3 rounded-0 btn-success'>Login</Button>
+                    <p className='text-center my-2'>Don't have an account? <Link to="/sign-up" className="text-success">Sign up</Link> </p>
+                
+                </Form>
+            </div>
         </div>
     )
 }

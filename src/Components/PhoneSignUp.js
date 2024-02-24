@@ -115,57 +115,60 @@ function PhoneSignIn() {
     }
 
     return (
-        <div className='d-flex flex-column align-items-center justify-content-center h-100'>
-            { displayLevel === 0 &&
-                <>
-                    <PhoneInput
-                    className="w-auto mb-1"
-                    country={"rs"}
-                    value={phoneNumber}
-                    onChange={(phone) => setPhone("+" + phone)}
-                    inputClass="custom-input"
-                    buttonClass="custom-input"
-                    />
-                    { phoneTaken && <p className='text-danger my-1'>Phone number already registered</p> }
-                    { invalidPhone && <p className='text-danger my-1'>Invalid phone number</p> }
-                    <div className={isActive ? 'my-1' : ''} id="recaptcha" ></div>
-                    <Button className='w-300 mt-1 rounded-0 btn-success' onClick={sendOtp}>Send OTP</Button>
-                    <p className="mt-1">Already have an account? <Link to="/login" className="text-success">Log in here</Link></p>
-                    
-                </>
-            }
-            { displayLevel === 1 &&
-                <>
-                    <InputOTP value={otp} onChange={setOtp} inputClassName="custom-input" />
-                    <Button className='w-345 mt-3 rounded-0 btn-success' onClick={verifyOtp}>Verify OTP</Button>
-                </>
-            }
-            { displayLevel === 2 &&
-                <Form onSubmit={signUpFunction}>
-                    <Form.Group className="w-300 mb-2">
-                        <Form.Label>Name</Form.Label>
-                        <Form.Control className='shadow-none rounded-0' size="sm" type="text" placeholder="Name" onChange={(event) => setName(event.target.value)} required />
-                    </Form.Group>
-                    
-                    <Form.Group className="w-300 mb-2">
-                        <Form.Label>Surname</Form.Label>
-                        <Form.Control className='shadow-none rounded-0' size="sm" type="text" placeholder="Surname" onChange={(event) => setSurname(event.target.value)} required />
-                    </Form.Group>
+        <div className='d-flex flex-column align-items-center justify-content-center h-100 custom-gradient'>
+            <div className='d-flex flex-column align-items-center justify-content-center rounded-4 w-30 h-70 bg-white'>
+            <h1 style={{ fontSize: 40 }} className='mb-5 fw-bold text-dark'>Create your Account</h1>
+                { displayLevel === 0 &&
+                    <>
+                        <PhoneInput
+                        className="w-auto mb-1"
+                        country={"rs"}
+                        value={phoneNumber}
+                        onChange={(phone) => setPhone("+" + phone)}
+                        inputClass="custom-input"
+                        buttonClass="custom-input"
+                        />
+                        { phoneTaken && <p className='text-danger my-1'>Phone number already registered</p> }
+                        { invalidPhone && <p className='text-danger my-1'>Invalid phone number</p> }
+                        <div className={isActive ? 'my-1' : ''} id="recaptcha" ></div>
+                        <Button className='w-300 mt-1 rounded-0 btn-success' onClick={sendOtp}>Send OTP</Button>
+                        <p className="mt-1">Already have an account? <Link to="/login" className="text-success">Log in here</Link></p>
+                        
+                    </>
+                }
+                { displayLevel === 1 &&
+                    <>
+                        <InputOTP value={otp} onChange={setOtp} inputClassName="custom-input" />
+                        <Button className='w-345 mt-3 rounded-0 btn-success' onClick={verifyOtp}>Verify OTP</Button>
+                    </>
+                }
+                { displayLevel === 2 &&
+                    <Form onSubmit={signUpFunction}>
+                        <Form.Group className="w-300 mb-2">
+                            <Form.Label>Name</Form.Label>
+                            <Form.Control className='shadow-none rounded-0' size="sm" type="text" placeholder="Name" onChange={(event) => setName(event.target.value)} required />
+                        </Form.Group>
+                        
+                        <Form.Group className="w-300 mb-2">
+                            <Form.Label>Surname</Form.Label>
+                            <Form.Control className='shadow-none rounded-0' size="sm" type="text" placeholder="Surname" onChange={(event) => setSurname(event.target.value)} required />
+                        </Form.Group>
 
-                    <Form.Group className='w-300'>
-                        <Form.Label>Password</Form.Label>
-                        <Form.Control className='shadow-none rounded-0' size="sm" type="password" onChange={(event) => setPassword(event.target.value)} required />
-                    </Form.Group>
+                        <Form.Group className='w-300'>
+                            <Form.Label>Password</Form.Label>
+                            <Form.Control className='shadow-none rounded-0' size="sm" type="password" onChange={(event) => setPassword(event.target.value)} required />
+                        </Form.Group>
 
-                    <Button type="submit" className='w-300 mt-3 rounded-0 btn-success'>Sign Up</Button>
-                </Form>
-            }
-            { displayLevel === 3 &&
-                <>
-                    <h4>Registration successful</h4>
-                    <Button className='w-300 mt-3 rounded-0 btn-success' onClick={() => navigate("/login")}>Go to login page</Button>
-                </>
-            }
+                        <Button type="submit" className='w-300 mt-3 rounded-0 btn-success'>Sign Up</Button>
+                    </Form>
+                }
+                { displayLevel === 3 &&
+                    <>
+                        <h4>Registration successful</h4>
+                        <Button className='w-300 mt-3 rounded-0 btn-success' onClick={() => navigate("/login")}>Go to login page</Button>
+                    </>
+                }
+            </div>
         </div>
     )
 }
