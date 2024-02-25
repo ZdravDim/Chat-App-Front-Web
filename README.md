@@ -19,7 +19,7 @@
 
 ## GitHub Pages
 
-- App is live on: ...
+- App is live on: https://zdravdim.github.io/Chat-App-Front-Web/#/login
 
 ## Installation
 
