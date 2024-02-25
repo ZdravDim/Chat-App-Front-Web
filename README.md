@@ -31,6 +31,7 @@
 
 - Install [Docker](https://www.docker.com/products/docker-desktop)
 - Download https://github.com/ZdravDim/Chat-App-Front-Web/blob/main/docker-compose.yaml
+- Use the `cd` command to navigate to folder containing downloaded file
 - Then run `docker-compose up`
 - Frontend will run on http://localhost:3000
 - Backend will run on http://localhost:3001
