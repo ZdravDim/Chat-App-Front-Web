@@ -71,3 +71,12 @@
   word-wrap: break-word;
   border-radius: 1em;
 }
+
+.hideScrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hideScrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none
+}

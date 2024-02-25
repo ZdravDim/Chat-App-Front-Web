@@ -27,7 +27,8 @@ export async function joinRoom(oldRoom, newRoom, phoneNumber, createRoom) {
             return []
         }
     }
-    else console.log("Cannot join room: Socket is null!")
+    console.log("Cannot join room: Socket is null!")
+    return []
 }
 
 export function leaveRoom(phoneNumber, roomName) {

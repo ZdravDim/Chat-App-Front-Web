@@ -24,26 +24,37 @@ function Main({onNavigation}) {
 
 	const [showRooms, setShowRooms] = useState(true)
 
-	const [message, setMessage] = useState("")
+	const [rooms, setRooms] = useState([])
+	const [currentRoom, setCurrentRoom] = useState(null)
 
 	const [settingsModal, setSettingsModal] = useState(false);
 	const [createRoomModal, setCreateRoomModal] = useState(false);
 	const [joinRoomModal, setJoinRoomModal] = useState(false);
-
-	const [rooms, setRooms] = useState([])
-	const [currentRoom, setCurrentRoom] = useState(null)
 
 	const [RoomModalName, setRoomModalName] = useState('');
 	const [emptyRoomName, setEmptyRoomName] = useState(false)
 	const [roomNameError, setRoomNameError] = useState(false)
 	
 	const inputFieldReference = useRef(null);
-
-	const [messageHistory, setMessageHistory] = useState([]);
+	const messageBodyRef = useRef(null);
 
 	const [maxHeight, setMaxHeight] = useState(window.innerHeight);
 
-	const handleMessage = (message) => { setMessageHistory(prevMessages => [...prevMessages, message]); };
+	const [message, setMessage] = useState("")
+	const [messageHistory, setMessageHistory] = useState([]);
+
+	const handleMessage = (message) => { setMessageHistory(prevMessages => [...prevMessages, message]) };
+
+	const moveScrollBarDown = () => {
+		if (messageBodyRef.current) {
+			const { scrollHeight, clientHeight } = messageBodyRef.current;
+			messageBodyRef.current.scrollTop = scrollHeight - clientHeight;
+		}
+	}
+
+	useEffect(() => {
+		moveScrollBarDown()
+	}, [currentRoom, messageHistory]);
 
 	useEffect(() => {
 
@@ -108,6 +119,10 @@ function Main({onNavigation}) {
 		setRoomNameError(false)
 	}
 
+	const sortMessagesByTimestamp = (a, b) => {
+		return a.timestamp - b.timestamp
+	}
+
 	const JoinOrCreateRoom = async(createRoom = false) => {
 
 		if (RoomModalName.length) {
@@ -124,7 +139,7 @@ function Main({onNavigation}) {
 						return
 					}
 					const room_messages = await joinRoom(currentRoom, RoomModalName, userData.phoneNumber, false)
-					setMessageHistory(room_messages)
+					setMessageHistory(room_messages.sort(sortMessagesByTimestamp))
 					helperFunction()
 				}
 				else {
@@ -134,7 +149,7 @@ function Main({onNavigation}) {
 						return
 					}
 					const room_messages = await joinRoom(currentRoom, RoomModalName, userData.phoneNumber, true)
-					setMessageHistory(room_messages)
+					setMessageHistory(room_messages.sort(sortMessagesByTimestamp))
 				}
 
 				addRoom(RoomModalName)
@@ -159,7 +174,7 @@ function Main({onNavigation}) {
 
 	const openRoom = async(newRoom) => {
 		const room_messages = await joinRoom(currentRoom, newRoom, userData.phoneNumber, false)
-		setMessageHistory(room_messages)
+		setMessageHistory(room_messages.sort(sortMessagesByTimestamp))
 		setCurrentRoom(newRoom)
 	}
 
@@ -167,7 +182,6 @@ function Main({onNavigation}) {
 		
 		try {
 
-			// call /auth to get new access_token if it expired before trying to delete to avoid bugs
 			await axios.post('http://localhost:3001/api/auth', null, { withCredentials: true });
 			
 			const response = await axios.delete('http://localhost:3001/api/delete-account', { withCredentials: true })
@@ -211,7 +225,7 @@ function Main({onNavigation}) {
 					<h1 className='mt-3 mb-4'>Rooms</h1>
 					<div style={{ maxHeight: maxHeight - 150, overflowY: 'auto' }}>
 						{rooms.map((room) => (
-							<div style={{ fontSize: 22 }} ey={room} tabIndex={-1} onClick={() => openRoom(room)} className='rounded-1 bg-success my-2 mx-3 cursor-pointer p-3'>
+							<div style={{ fontSize: 22 }} key={room} tabIndex={-1} onClick={() => openRoom(room)} className='rounded-1 bg-success my-2 mx-3 cursor-pointer p-3'>
 								{room}
 							</div>
 						))}
@@ -222,12 +236,12 @@ function Main({onNavigation}) {
 			{ currentRoom &&
 				<div className="d-flex flex-column h-100 flex-grow text-white">
 					<div className="p-3 flex-grow-1 mb-20">
-						<div style={{height: 60}}>
-							<h3 className='text-center d-inline-block'>{currentRoom}</h3>
+						<div className='text-center' style={{height: 60}}>
+							<h2 className='text-center d-inline-block'>{currentRoom}</h2>
 							<Button style={{height: 40, width: 70, float: 'right'}} className='btn btn-danger rounded-0 d-inline-block' onClick={() => leaveCurrentRoom()}>Leave</Button>
 						</div>
 
-						<div className='pt-3' style={{ maxHeight: maxHeight - 180, overflowY: 'auto' }}>
+						<div ref={messageBodyRef} className='pt-3 hideScrollbar' style={{ maxHeight: maxHeight - 180, overflowY: 'auto' }}>
 							{messageHistory.map((message) => {
 								const messageDate = new Date(message.timestamp);
 								const formattedHours = String(messageDate.getHours()).padStart(2, '0');
@@ -251,7 +265,8 @@ function Main({onNavigation}) {
 						type="text"
 						placeholder="Enter a message..."
 						className="shadow-none rounded-0"
-						onChange={(event) => setMessage(event.target.value)}
+						onChange={(event) => { setMessage(event.target.value); moveScrollBarDown() }}
+						onFocus={ () => moveScrollBarDown() }
 						/>  
 						<Button type="submit" className="btn-success rounded-0"><IoSend className='text-white m-1'/></Button>
 					</Form>
