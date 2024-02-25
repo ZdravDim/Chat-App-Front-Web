@@ -26,7 +26,9 @@ function PhoneSignIn() {
     const [displayLevel, setDisplayLevel] = useState(0)
     const [name, setName] = useState("")
     const [surname, setSurname] = useState("")
-    const [password, setPassword] = useState("")
+    const [password1, setPassword1] = useState("")
+    const [password2, setPassword2] = useState("")
+    const [passwordsDifferent, setPasswordsDifferent] = useState(false)
     const [invalidPhone, setInvalidPhone] = useState(false)
     const [phoneTaken, setPhoneTaken] = useState(false)
     const [isActive, setIsActive] = useState(false)
@@ -95,7 +97,17 @@ function PhoneSignIn() {
 
         event.preventDefault()
 
-        const hashedPassword = sha256.create().update(password).hex();
+        const form = event.currentTarget;
+
+        if (form.checkValidity() === false || password1 !== password2) {
+            event.stopPropagation();
+            setPasswordsDifferent(true);
+            if (password1 !== password2) form.password2.setCustomValidity('Passwords must match');
+            form.classList.add('was-validated');
+            return;
+        }
+
+        const hashedPassword = sha256.create().update(password1).hex();
 
         const userData = {
             phoneNumber: phoneNumber,
@@ -117,9 +129,9 @@ function PhoneSignIn() {
     return (
         <div className='d-flex flex-column align-items-center justify-content-center h-100 custom-gradient'>
             <div className='d-flex flex-column align-items-center justify-content-center rounded-4 w-30 h-70 bg-white'>
-            <h1 style={{ fontSize: 40 }} className='mb-5 fw-bold text-dark'>Create your Account</h1>
                 { displayLevel === 0 &&
                     <>
+                        <h1 style={{ fontSize: 40 }} className='mb-5 fw-bold text-dark'>Create your Account</h1>
                         <PhoneInput
                         className="w-auto mb-1"
                         country={"rs"}
@@ -138,29 +150,42 @@ function PhoneSignIn() {
                 }
                 { displayLevel === 1 &&
                     <>
+                        <h1 className='mb-3 fw-bold text-dark'>OTP Code Verification</h1>
+                        <p className='mb-0'>A verification code has been sent to your phone</p>
+                        <p>{phoneNumber}</p>
                         <InputOTP value={otp} onChange={setOtp} inputClassName="custom-input" />
                         <Button className='w-345 mt-3 rounded-0 btn-success' onClick={verifyOtp}>Verify OTP</Button>
                     </>
                 }
                 { displayLevel === 2 &&
-                    <Form onSubmit={signUpFunction}>
-                        <Form.Group className="w-300 mb-2">
-                            <Form.Label>Name</Form.Label>
-                            <Form.Control className='shadow-none rounded-0' size="sm" type="text" placeholder="Name" onChange={(event) => setName(event.target.value)} required />
-                        </Form.Group>
-                        
-                        <Form.Group className="w-300 mb-2">
-                            <Form.Label>Surname</Form.Label>
-                            <Form.Control className='shadow-none rounded-0' size="sm" type="text" placeholder="Surname" onChange={(event) => setSurname(event.target.value)} required />
-                        </Form.Group>
+                    <>
+                        <h1 className='mb-4 fw-bold text-dark'>Sign Up</h1>
+                        <Form onSubmit={signUpFunction} noValidate>
+                            <Form.Group className="w-300 mb-1">
+                                <Form.Label>First Name</Form.Label>
+                                <Form.Control className='shadow-none rounded-0' size="sm" type="text" placeholder="Your First Name" onChange={(event) => setName(event.target.value)} required />
+                            </Form.Group>
+                            
+                            <Form.Group className="w-300 mb-1">
+                                <Form.Label>Last Name</Form.Label>
+                                <Form.Control className='shadow-none rounded-0' size="sm" type="text" placeholder="Your Last Name" onChange={(event) => setSurname(event.target.value)} required />
+                            </Form.Group>
 
-                        <Form.Group className='w-300'>
-                            <Form.Label>Password</Form.Label>
-                            <Form.Control className='shadow-none rounded-0' size="sm" type="password" onChange={(event) => setPassword(event.target.value)} required />
-                        </Form.Group>
+                            <Form.Group className='w-300 mb-1'>
+                                <Form.Label>Password</Form.Label>
+                                <Form.Control className='shadow-none rounded-0' size="sm" type="password" placeholder='Password' onChange={(event) => setPassword1(event.target.value)} required />
+                            </Form.Group>
 
-                        <Button type="submit" className='w-300 mt-3 rounded-0 btn-success'>Sign Up</Button>
-                    </Form>
+                            <Form.Group className='w-300'>
+                                <Form.Label>Confirm password</Form.Label>
+                                <Form.Control name='password2' className='shadow-none rounded-0' size="sm" type="password" placeholder='Re-type Password' onChange={(event) => setPassword2(event.target.value)} required />
+                            </Form.Group>
+
+                            { passwordsDifferent && <p className='text-danger my-0'>Passwords not matching</p> }
+
+                            <Button type="submit" className='w-300 mt-4 rounded-0 btn-success'>Sign Up</Button>
+                        </Form>
+                    </>
                 }
                 { displayLevel === 3 &&
                     <>

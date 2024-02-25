@@ -17,7 +17,22 @@ function LogIn({onNavigation}) {
     const [invalidCredentials, setInvalidCredentials] = useState(false)
 
     const logInSubmit = async(event) => {
+
         event.preventDefault()
+
+        const form = event.currentTarget;
+
+        const phoneInputElement = form.querySelector('input.custom-input');
+        phoneInputElement.setCustomValidity('')
+
+        if (form.checkValidity() === false || phoneInputElement.value.length < 6) {
+            event.stopPropagation()
+            if (phoneInputElement.value.length < 5) phoneInputElement.setCustomValidity("Invalid phone input")
+            form.classList.add('was-validated')
+            return
+        }
+
+        phoneInputElement.setCustomValidity('')
 
         var body = {
             phoneNumber: phoneNumber,
@@ -33,14 +48,16 @@ function LogIn({onNavigation}) {
                 console.log("Login successful.")
                 onNavigation()
                 navigate("/")
+                return
             }
-            else {
-
-                console.log("Login failed: Invalid credentials.")
-                setInvalidCredentials(true)
-            }
+            
+            console.log("Login failed: Invalid credentials.")
+            setInvalidCredentials(true)
         }
-        catch(error) { console.log(error.message) }
+        catch(error) {
+            console.log("Error logging in:" +  error.message)
+            setInvalidCredentials(true)
+        }
         
     }
 
@@ -48,7 +65,8 @@ function LogIn({onNavigation}) {
         <div className='d-flex flex-column align-items-center justify-content-center h-100 custom-gradient'>
             <div className='d-flex flex-column align-items-center justify-content-center rounded-4 w-30 h-70 bg-white'>
                 <h1 style={{ fontSize: 40 }} className='mb-5 fw-bold text-dark'>LogIn to Chat App</h1>
-                <Form onSubmit={logInSubmit}>
+                <Form onSubmit={logInSubmit} noValidate>
+
                     <Form.Label>Phone number</Form.Label>
                     <PhoneInput
                     className="w-auto mb-1"
@@ -64,9 +82,7 @@ function LogIn({onNavigation}) {
                         <Form.Control className='shadow-none rounded-0' size="sm" type="password" onChange={(event) => setPassword(event.target.value)} required />
                     </Form.Group>
 
-                    { invalidCredentials &&
-                        <p className='text-center text-danger my-1'>Invalid credentials</p>
-                    }
+                    { invalidCredentials && <p className='text-center text-danger mt-2 mb-0'>Invalid credentials</p> }
 
                     <Button type="submit" className='w-300 mt-3 rounded-0 btn-success'>Login</Button>
                     <p className='text-center my-2'>Don't have an account? <Link to="/sign-up" className="text-success">Sign up</Link> </p>
