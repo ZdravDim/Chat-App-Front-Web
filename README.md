@@ -1,6 +1,6 @@
 # Chat App Frontend
 
-![image](https://github.com/ZdravDim/Chat-App-Front-Web/assets/72796409/2a0a035e-a434-4ba8-9d10-001e4b437a10)
+![image](https://github.com/ZdravDim/Chat-App-Front-Web/assets/72796409/dd9a12a8-a626-4085-911c-1a9579840395)
 
 ![image](https://github.com/ZdravDim/Chat-App-Front-Web/assets/72796409/10cfc0fc-5ac5-4144-8d8f-d86cf94d7a6c)
 
