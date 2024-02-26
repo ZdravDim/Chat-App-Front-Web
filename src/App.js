@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 
 import axios from 'axios'
 
@@ -17,7 +17,7 @@ function App() {
   const onNavigation = useCallback(async() => {
 
     try {
-      const response = await axios.post('http://localhost:3001/api/auth', null, { withCredentials: true });
+      const response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/auth', null, { withCredentials: true });
 
       if (response.status === 200) setLoggedIn(true)
     

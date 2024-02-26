@@ -60,7 +60,7 @@ function Main({onNavigation}) {
 
 		async function fetchUserData() {
 			try {
-				const response = await axios.post('http://localhost:3001/api/user-data', null, { withCredentials: true })
+				const response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/user-data', null, { withCredentials: true })
 				if (response.status === 200) setUserData(response.data)
 			}
 			catch(error) {
@@ -70,7 +70,7 @@ function Main({onNavigation}) {
 
 		async function fetchUserRooms() {
 			try {
-				const response = await axios.post('http://localhost:3001/api/user-rooms', null, { withCredentials: true })
+				const response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/user-rooms', null, { withCredentials: true })
 				if (response.status === 200) setRooms(response.data.rooms)
 			}
 			catch(error) {
@@ -130,7 +130,7 @@ function Main({onNavigation}) {
 			const postData = { roomName: RoomModalName }
 
 			try {
-				const response = await axios.post('http://localhost:3001/api/room-exists', postData, { withCredentials: true })
+				const response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/room-exists', postData, { withCredentials: true })
 
 				if (response.data.roomExists) {
 
@@ -182,9 +182,9 @@ function Main({onNavigation}) {
 		
 		try {
 
-			await axios.post('http://localhost:3001/api/auth', null, { withCredentials: true });
+			await axios.post('https://chatappbackendrs.azurewebsites.net/api/auth', null, { withCredentials: true });
 			
-			const response = await axios.delete('http://localhost:3001/api/delete-account', { withCredentials: true })
+			const response = await axios.delete('https://chatappbackendrs.azurewebsites.net/api/delete-account', { withCredentials: true })
 
 			if (response.status === 200) {
 				onNavigation()
@@ -199,7 +199,7 @@ function Main({onNavigation}) {
 
 		try {
 
-			const response = await axios.get('http://localhost:3001/api/logout', { withCredentials: true })
+			const response = await axios.get('https://chatappbackendrs.azurewebsites.net/api/logout', { withCredentials: true })
 
 			if (response.status === 200) {
 				onNavigation()
@@ -248,7 +248,7 @@ function Main({onNavigation}) {
     							const formattedMinutes = String(messageDate.getMinutes()).padStart(2, '0');
 								return (
 									<div key={message.id} className='d-flex flex-column'>
-										<div className={`message-width message-container text-white bg-custom-grey mb-1 mt-2 py-2 px-3 ${message.senderNumber === userData.phoneNumber ? 'align-self-start' : 'align-self-end'}`}>
+										<div className={`message-width message-container text-white bg-custom-grey mb-1 mt-2 py-2 px-3 ${message.senderNumber === userData.phoneNumber ? 'align-self-end' : 'align-self-start'}`}>
 											<p className='mb-0' style={{ color: message.senderColor }}>{message.senderNumber}</p>
 											<p className='mb-0'>{message.messageBody}</p>
 											<p className='mb-0 text-secondary text-end'>{formattedHours}:{formattedMinutes}</p>
