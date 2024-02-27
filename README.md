@@ -16,6 +16,7 @@
 - Firebase auth - phone authentication
 - JWT authentication
 - Socket.IO for WebSocket connection
+- Docker
 
 ## GitHub Pages
 
