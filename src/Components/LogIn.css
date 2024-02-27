@@ -14,6 +14,14 @@
     height: 65% !important;
 }
 
+.h-580 {
+    height: 580px !important;
+}
+
+.w-580 {
+    width: 580px !important;
+}
+
 .custom-gradient {
     background: rgb(45,45,45);
     background: radial-gradient(circle, rgba(45,45,45,1) 20%, rgba(0,0,0,1) 100%);

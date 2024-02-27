@@ -101,8 +101,14 @@ function PhoneSignIn() {
 
         if (form.checkValidity() === false || password1 !== password2) {
             event.stopPropagation();
-            setPasswordsDifferent(true);
-            if (password1 !== password2) form.password2.setCustomValidity('Passwords must match');
+            if (password1 !== password2) {
+                form.password2.setCustomValidity('Passwords must match');
+                setPasswordsDifferent(true);
+            }
+            else {
+                form.password2.setCustomValidity('');
+                setPasswordsDifferent(false);
+            }
             form.classList.add('was-validated');
             return;
         }
@@ -128,7 +134,7 @@ function PhoneSignIn() {
 
     return (
         <div className='d-flex flex-column align-items-center justify-content-center h-100 custom-gradient'>
-            <div className='d-flex flex-column align-items-center justify-content-center rounded-4 w-30 h-70 bg-white'>
+            <div className='d-flex flex-column align-items-center justify-content-center rounded-4 h-580 w-580 bg-white'>
                 { displayLevel === 0 &&
                     <>
                         <h1 style={{ fontSize: 40 }} className='mb-5 fw-bold text-dark'>Create your Account</h1>
