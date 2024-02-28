@@ -41,7 +41,7 @@ function LogIn({onNavigation}) {
 
         try {
 
-            const response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/login', body, { withCredentials: true })
+            const response = await axios.post('http://localhost:3001/api/login', body, { withCredentials: true })
 
             if (response.status === 200) {
 
