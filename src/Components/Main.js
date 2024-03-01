@@ -377,13 +377,14 @@ function Main({onNavigation}) {
 
 	return (
 		<div className='d-flex flex-row h-100 bg-dark'>
-			<div className='w-8 text-center'>
+			<div className='d-flex flex-column align-items-center w-8 text-center'>
 				<IoMdContact className='icon' onClick={() => { setInputValueError(false); setEmptyInputError(false); setAddContactModal(true) }}/>
 				<RiLoginBoxLine className='icon' onClick={ () => { setEmptyInputError(false); setInputValueError(false); setRoomAlredyJoinedError(false); setJoinRoomModal(true) }}/>
 				<IoAdd className='icon' onClick={() => { setEmptyInputError(false); setInputValueError(false); setCreateRoomModal(true)}}/>
 				<BiExpandHorizontal className='icon' onClick={() => setShowRooms(!showRooms)}/>
+				<div className='flex-grow-1'></div>
 				<RiLogoutBoxLine className='icon' onClick={logOut} />
-				<IoSettingsOutline className='icon' onClick= { () => setSettingsModal(true) }/>
+				<IoSettingsOutline className='icon mb-3' onClick= { () => setSettingsModal(true) }/>
 			</div>
 
 			{ showRooms &&
