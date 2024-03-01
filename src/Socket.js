@@ -9,7 +9,7 @@ const socket_connect = () => {
     socket = io(URL);
 
     socket.on('message', handleIncomingMessage);
-    socket.on("connect_error", onError);
+    socket.on("connect_error", (error) => { console.log("Error initiating WebSocket connection: " + error.message) });
 }
 
 export async function joinRoom(oldRoom, newRoom, phoneNumber, createRoom) {
@@ -55,10 +55,9 @@ export function sendMessage(roomName, messageBody, senderNumber, senderColor) {
 let messageListener = null
 
 // Show new message to screen (push to messageHistory array)
-function handleIncomingMessage(newMessage) { if (messageListener && typeof messageListener === 'function') messageListener(newMessage) }
-
-//handle connections error
-function onError(error) { console.log(error.message) }
+function handleIncomingMessage(newMessage) {
+    if (messageListener && typeof messageListener === 'function') messageListener(newMessage)
+}
 
 export function setMessageListener(listener) { messageListener = listener }
 export function removeMessageListener() { messageListener = null }

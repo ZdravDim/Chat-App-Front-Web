@@ -38,9 +38,11 @@ function Main({onNavigation}) {
 
 	const [RoomModalName, setRoomModalName] = useState('');
 
+	const [sameUserError, setSameUserError] = useState(false)
 	const [emptyInputError, setEmptyInputError] = useState(false)
 	const [inputValueError, setInputValueError] = useState(false)
-	const [privateRoomExistsError, setPrivateRoomExistsError] = useState(false)
+	const [roomAlreadyJoinedError, setRoomAlredyJoinedError] = useState(false)
+	const [contactAlreadyAdded, setContactAlreadyAdded] = useState(false)
 	
 	const inputFieldReference = useRef(null)
 	const messageBodyRef = useRef(null)
@@ -111,19 +113,45 @@ function Main({onNavigation}) {
 
 		// send to socket
 		sendMessage(currentRoom, message, userData.phoneNumber, userData.userColor)
-	
+
+		moveRoomToFirstPosition(message.timestamp)
+		
 		// Clear the message input field after sending
 		setMessage("")
 		inputFieldReference.current.value = ""
 	}
 
-	const addRoom = (room) => { setRooms(prevRooms => [...prevRooms, room]) }
+	const addRoom = (room) => {
+		setRooms(prevRooms => [room, ...prevRooms])
+	}
+
+	const moveRoomToFirstPosition = (timestamp) => {
+
+		let tempRooms = [...rooms]
+		let index = -1;
+
+		for (let i = 0; i < tempRooms.length; i++) {
+			if (tempRooms[i].roomName === currentRoom) {
+				index = i;
+				break;
+			}
+		}
+
+		tempRooms[index].latestTimestamp = Date.now() // not real time, just to push message to top, upon refresh it gets real value
+
+		setRooms(tempRooms)
+
+	}
 
 	const helperFunction = () => {
 		setCreateRoomModal(false)
 		setJoinRoomModal(false)
 		setEmptyInputError(false)
 		setInputValueError(false)
+	}
+
+	const sortRoomsByLatestMessage = (a, b) => {
+		return b.latestTimestamp - a.latestTimestamp
 	}
 
 	const sortMessagesByTimestamp = (a, b) => {
@@ -133,7 +161,18 @@ function Main({onNavigation}) {
 	const addContact = async() => {
 
 		if (!contactPhoneNumber) {
+			setSameUserError(false)
+			setContactAlreadyAdded(false)
+			setInputValueError(false)
 			setEmptyInputError(true)
+			return
+		}
+
+		if (contactPhoneNumber === userData.phoneNumber) {
+			setSameUserError(true)
+			setEmptyInputError(false)
+			setContactAlreadyAdded(false)
+			setInputValueError(false)
 			return
 		}
 
@@ -154,34 +193,63 @@ function Main({onNavigation}) {
 
 					if (response.status === 200) {
 						if (!response.data.roomExists) {
+
 							const roomName = userData.phoneNumber + contactPhoneNumber
+
 							JoinOrCreatePrivateRoom(roomName, true)
-							setAddContactModal(false)
 
 							let roomData = {
 								roomName: roomName, 
 								isPrivateRoom: true
 							}
-
 							roomData[userData.phoneNumber] = response.data.user1
 							roomData[contactPhoneNumber] = response.data.user2
 
 							addRoom(roomData)
 							setCurrentRoom(roomName)
+							setContactData({
+								phoneNumber: contactPhoneNumber,
+								name: roomData[contactPhoneNumber].name,
+								surname: roomData[contactPhoneNumber].surname
+							})
+							setAddContactModal(false)
 							return
 						}
 
-						setPrivateRoomExistsError(true)
-						setEmptyInputError(false)
+						setContactAlreadyAdded(true)
 						setInputValueError(false)
+						setEmptyInputError(false)
+						setSameUserError(false)
 
+						// const roomName = response.data.roomName
+						// JoinOrCreatePrivateRoom(roomName)
+						// let roomData = {
+						// 	roomName: roomName, 
+						// 	isPrivateRoom: true
+						// }
+						// roomData[userData.phoneNumber] = response.data.user1
+						// roomData[contactPhoneNumber] = response.data.user2
+
+						// addRoom(roomData)
+						// setCurrentRoom(roomName)
+						// setContactData({
+						// 	phoneNumber: contactPhoneNumber,
+						// 	name: roomData[contactPhoneNumber].name,
+						// 	surname: roomData[contactPhoneNumber].surname
+						// })
+						// setAddContactModal(false)
+						// setEmptyInputError(false)
+						// setInputValueError(false)
+						// setAddContactModal(false)
+						return
 					}
 
 					return
 				}
 
-				setPrivateRoomExistsError(false)
 				setEmptyInputError(false)
+				setContactAlreadyAdded(false)
+				setSameUserError(false)
 				setInputValueError(true)
 				return
 			}
@@ -207,25 +275,38 @@ function Main({onNavigation}) {
 
 		if (RoomModalName.length) {
 			
-			const postData = { roomName: RoomModalName }
+			const postData = {
+				roomName: RoomModalName,
+				phoneNumber: userData.phoneNumber
+			}
 
 			try {
-				const response = await axios.post('http://localhost:3001/api/room-exists', postData, { withCredentials: true })
+				let response = await axios.post('http://localhost:3001/api/room-exists', postData, { withCredentials: true })
 
 				if (response.data.roomExists) {
 
 					if (createRoom) {
 						setInputValueError(true)
+						setEmptyInputError(false)
 						return
 					}
+
+					if (response.data.userIsJoined) {
+						setRoomAlredyJoinedError(true)
+						setEmptyInputError(false)
+						setInputValueError(false)
+						return
+					}
+
 					const room_messages = await joinRoom(currentRoom, RoomModalName, userData.phoneNumber, false)
 					setMessageHistory(room_messages.sort(sortMessagesByTimestamp))
-					helperFunction()
 				}
 				else {
 
 					if (!createRoom) {
 						setInputValueError(true)
+						setEmptyInputError(false)
+						setRoomAlredyJoinedError(false)
 						return
 					}
 					const room_messages = await joinRoom(currentRoom, RoomModalName, userData.phoneNumber, true)
@@ -240,9 +321,12 @@ function Main({onNavigation}) {
 				console.log(error.message)
 				helperFunction()
 			}
-			finally { setRoomModalName('') }
 		}
-		else setEmptyInputError(true)
+		else {
+			setEmptyInputError(true)
+			setInputValueError(false)
+			setRoomAlredyJoinedError(false)
+		}
 
 	}
 
@@ -318,8 +402,8 @@ function Main({onNavigation}) {
 	return (
 		<div className='d-flex flex-row h-100 bg-dark'>
 			<div className='w-8 text-center'>
-				<IoMdContact className='icon' onClick={() => { setInputValueError(false); setEmptyInputError(false); setPrivateRoomExistsError(false); setAddContactModal(true) }}/>
-				<RiLoginBoxLine className='icon' onClick={ () => { setEmptyInputError(false); setInputValueError(false); setJoinRoomModal(true) }}/>
+				<IoMdContact className='icon' onClick={() => { setInputValueError(false); setEmptyInputError(false); setAddContactModal(true) }}/>
+				<RiLoginBoxLine className='icon' onClick={ () => { setEmptyInputError(false); setInputValueError(false); setRoomAlredyJoinedError(false); setJoinRoomModal(true) }}/>
 				<IoAdd className='icon' onClick={() => { setEmptyInputError(false); setInputValueError(false); setCreateRoomModal(true)}}/>
 				<BiExpandHorizontal className='icon' onClick={() => setShowRooms(!showRooms)}/>
 				<RiLogoutBoxLine className='icon' onClick={logOut} />
@@ -329,13 +413,13 @@ function Main({onNavigation}) {
 			{ showRooms &&
 				<div className='h-100 w-20 text-white text-break text-center bg-custom-grey'>
 					<h1 className='mt-3 mb-4'>Rooms</h1>
-					<div style={{ maxHeight: maxHeight - 150, overflowY: 'auto' }}>
-						{rooms.map((room) => {
+					<div style={{ maxHeight: maxHeight - 150, overflowY: 'auto' }} className='hideScrollbar'>
+						{rooms.sort(sortRoomsByLatestMessage).map((room) => {
 							let contact = {}
 
 							if (room.isPrivateRoom) contact = getContactData(userData.phoneNumber, room)
 
-							return <div style={{ fontSize: 22 }} key={room.roomName} tabIndex={-1} onClick={() => openRoom(room)} className='rounded-1 bg-success my-2 mx-3 cursor-pointer p-3'>
+							return <div style={{ fontSize: 22 }} key={room.roomName} tabIndex={-1} onClick={() => openRoom(room)} className='bg-success rounded-1 my-2 mx-3 cursor-pointer p-3'>
 								{!room.isPrivateRoom ? 
 									<p className='mb-0'>{room.roomName}</p> 
 									: 
@@ -353,11 +437,11 @@ function Main({onNavigation}) {
 			{ currentRoom &&
 				<div className="d-flex flex-column h-100 flex-grow text-white">
 					<div className="p-3 flex-grow-1 mb-20">
-						<div className='text-center' style={{height: 60}}>
+						<div className='position-relative text-center' style={{height: 60}}>
 							<h2 className='text-center d-inline-block'>{
 								(currentRoom[0] === '+') ? (contactData.name + " " + contactData.surname) : currentRoom
 							}</h2>
-							<Button style={{height: 40, width: 70, float: 'right'}} className='btn btn-danger rounded-0 d-inline-block' onClick={() => leaveCurrentRoom()}>Leave</Button>
+							<Button className='position-absolute end-0 btn btn-danger rounded-0' onClick={() => leaveCurrentRoom()}>{currentRoom[0] === '+' ? "Remove Contact" : "Leave"}</Button>
 						</div>
 
 						<div ref={messageBodyRef} className='pt-3 hideScrollbar' style={{ maxHeight: maxHeight - 180, overflowY: 'auto' }}>
@@ -367,11 +451,15 @@ function Main({onNavigation}) {
     							const formattedMinutes = String(messageDate.getMinutes()).padStart(2, '0');
 								return (
 									<div key={message.id} className='d-flex flex-column'>
-										<div className={`message-width message-container text-white bg-custom-grey mb-1 mt-2 py-2 px-3 ${message.senderNumber === userData.phoneNumber ? 'align-self-end' : 'align-self-start'}`}>
-											<p className='mb-0' style={{ color: message.senderColor }}>{message.senderNumber}</p>
-											<p className='mb-0'>{message.messageBody}</p>
-											<p className='mb-0 text-secondary text-end'>{formattedHours}:{formattedMinutes}</p>
-										</div>
+										{ !message.hasOwnProperty("type") ?
+											<div className={`message-width message-container text-white bg-custom-grey mb-1 mt-2 py-2 px-3 ${message.senderNumber === userData.phoneNumber ? 'align-self-end' : 'align-self-start'}`}>
+												<p className='mb-0' style={{ color: message.senderColor }}>{message.senderNumber}</p>
+												<p className='mb-0'>{message.messageBody}</p>
+												<p className='mb-0 text-secondary text-end'>{formattedHours}:{formattedMinutes}</p>
+											</div>
+											:
+											<p className='text-center text-secondary mb-0'>{message.phoneNumber} has {message.type} the chat</p>
+										}
 									</div>
 								);
 							})}
@@ -454,6 +542,7 @@ function Main({onNavigation}) {
 					<Form.Control className='shadow-none' type="text" placeholder="Room name" onChange={ (event) => setRoomModalName(event.target.value) } />
 					{ emptyInputError && <p className='text-danger mb-0'>Room name can't be empty</p> }
 					{ inputValueError && <p className='text-danger mb-0'>Room does not exist</p> }
+					{ roomAlreadyJoinedError && <p className='text-danger mb-0'>Room already joined</p> }
 				</Modal.Body>
 
 				<Modal.Footer> 
@@ -477,7 +566,8 @@ function Main({onNavigation}) {
 				<Form.Control className='shadow-none' type="text" placeholder="Enter contact phone number" onChange={ (event) => setContactPhoneNumber(event.target.value) } />
 					{ emptyInputError && <p className='text-danger mb-0'>Phone number can't be empty</p> }	
 					{ inputValueError && <p className='text-danger mb-0'>User does not exist</p> }
-					{ privateRoomExistsError && <p className='text-danger mb-0'>Private room already exists</p> }
+					{ sameUserError && <p className='text-danger mb-0'>You can't add yourself as a contact</p> }
+					{ contactAlreadyAdded && <p className='text-danger mb-0'>Contact already added</p> }
 				</Modal.Body>
 
 				<Modal.Footer> 
