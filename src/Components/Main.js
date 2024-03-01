@@ -8,11 +8,11 @@ import Modal from 'react-bootstrap/Modal'
 import axios from 'axios'
 
 import './Main.css'
-import { RiLogoutBoxLine, RiLoginBoxLine } from "react-icons/ri";
-import { IoSettingsOutline, IoSend, IoAdd } from "react-icons/io5";
-import { BiExpandHorizontal } from "react-icons/bi";
-import { MdDeleteOutline, MdOutlineDone } from "react-icons/md";
-import { IoMdContact } from "react-icons/io";
+import { RiLogoutBoxLine, RiLoginBoxLine } from "react-icons/ri"
+import { IoSettingsOutline, IoSend, IoAdd } from "react-icons/io5"
+import { BiExpandHorizontal } from "react-icons/bi"
+import { MdDeleteOutline, MdOutlineDone } from "react-icons/md"
+import { IoMdContact } from "react-icons/io"
 
 
 import { sendMessage, setMessageListener, removeMessageListener, joinRoom, leaveRoom } from "../Socket.js"
@@ -36,7 +36,7 @@ function Main({onNavigation}) {
 	const [contactPhoneNumber, setContactPhoneNumber] = useState('')
 	const [contactData, setContactData] = useState({})
 
-	const [RoomModalName, setRoomModalName] = useState('');
+	const [RoomModalName, setRoomModalName] = useState('')
 
 	const [sameUserError, setSameUserError] = useState(false)
 	const [emptyInputError, setEmptyInputError] = useState(false)
@@ -56,14 +56,14 @@ function Main({onNavigation}) {
 
 	const moveScrollBarDown = () => {
 		if (messageBodyRef.current) {
-			const { scrollHeight, clientHeight } = messageBodyRef.current;
-			messageBodyRef.current.scrollTop = scrollHeight - clientHeight;
+			const { scrollHeight, clientHeight } = messageBodyRef.current
+			messageBodyRef.current.scrollTop = scrollHeight - clientHeight
 		}
 	}
 
 	useEffect(() => {
 		moveScrollBarDown()
-	}, [currentRoom, messageHistory]);
+	}, [currentRoom, messageHistory])
 
 	useEffect(() => {
 
@@ -92,18 +92,18 @@ function Main({onNavigation}) {
 
 		const updateMaxHeight = () => { setMaxHeight(window.innerHeight) }
 
-        updateMaxHeight();
+        updateMaxHeight()
 
-        window.addEventListener('resize', updateMaxHeight);
+        window.addEventListener('resize', updateMaxHeight)
 
-		setMessageListener(handleMessage);
+		setMessageListener(handleMessage)
 
 		return () => {
 			removeMessageListener(handleMessage)
 			window.removeEventListener('resize', updateMaxHeight)
-		};
+		}
 
-	  }, []);
+	  }, [])
 
 	const sendMessageToRoom = (event) => {
 
@@ -128,12 +128,12 @@ function Main({onNavigation}) {
 	const moveRoomToFirstPosition = (timestamp) => {
 
 		let tempRooms = [...rooms]
-		let index = -1;
+		let index = -1
 
 		for (let i = 0; i < tempRooms.length; i++) {
 			if (tempRooms[i].roomName === currentRoom) {
-				index = i;
-				break;
+				index = i
+				break
 			}
 		}
 
@@ -220,27 +220,6 @@ function Main({onNavigation}) {
 						setInputValueError(false)
 						setEmptyInputError(false)
 						setSameUserError(false)
-
-						// const roomName = response.data.roomName
-						// JoinOrCreatePrivateRoom(roomName)
-						// let roomData = {
-						// 	roomName: roomName, 
-						// 	isPrivateRoom: true
-						// }
-						// roomData[userData.phoneNumber] = response.data.user1
-						// roomData[contactPhoneNumber] = response.data.user2
-
-						// addRoom(roomData)
-						// setCurrentRoom(roomName)
-						// setContactData({
-						// 	phoneNumber: contactPhoneNumber,
-						// 	name: roomData[contactPhoneNumber].name,
-						// 	surname: roomData[contactPhoneNumber].surname
-						// })
-						// setAddContactModal(false)
-						// setEmptyInputError(false)
-						// setInputValueError(false)
-						// setAddContactModal(false)
 						return
 					}
 
@@ -254,10 +233,7 @@ function Main({onNavigation}) {
 				return
 			}
 		} 
-		catch(error) {
-			console.log("Error adding contact: " + error.message)
-			// ...
-		} 
+		catch(error) { console.log("Error adding contact: " + error.message) } 
 	}
 
 	const JoinOrCreatePrivateRoom = async(roomName, createRoom = false) => {
@@ -341,8 +317,8 @@ function Main({onNavigation}) {
 		let phoneNumbers = []
 
 		function extractPhoneNumbers(inputString) {
-			const startIndex = inputString.indexOf('+', inputString.indexOf('+') + 1);
-			return [inputString.slice(0, startIndex), inputString.slice(startIndex)];
+			const startIndex = inputString.indexOf('+', inputString.indexOf('+') + 1)
+			return [inputString.slice(0, startIndex), inputString.slice(startIndex)]
 		}
 
 		if (room.isPrivateRoom) {
@@ -371,7 +347,7 @@ function Main({onNavigation}) {
 		
 		try {
 
-			await axios.post('http://localhost:3001/api/auth', null, { withCredentials: true });
+			await axios.post('http://localhost:3001/api/auth', null, { withCredentials: true })
 			
 			const response = await axios.delete('http://localhost:3001/api/delete-account', { withCredentials: true })
 
@@ -446,9 +422,9 @@ function Main({onNavigation}) {
 
 						<div ref={messageBodyRef} className='pt-3 hideScrollbar' style={{ maxHeight: maxHeight - 180, overflowY: 'auto' }}>
 							{messageHistory.map((message) => {
-								const messageDate = new Date(message.timestamp);
-								const formattedHours = String(messageDate.getHours()).padStart(2, '0');
-    							const formattedMinutes = String(messageDate.getMinutes()).padStart(2, '0');
+								const messageDate = new Date(message.timestamp)
+								const formattedHours = String(messageDate.getHours()).padStart(2, '0')
+    							const formattedMinutes = String(messageDate.getMinutes()).padStart(2, '0')
 								return (
 									<div key={message.id} className='d-flex flex-column'>
 										{ !message.hasOwnProperty("type") ?
@@ -461,7 +437,7 @@ function Main({onNavigation}) {
 											<p className='text-center text-secondary mb-0'>{message.phoneNumber} has {message.type} the chat</p>
 										}
 									</div>
-								);
+								)
 							})}
 						</div>
 					</div>
