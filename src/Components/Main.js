@@ -335,6 +335,10 @@ function Main({onNavigation}) {
 		return data
 	}
 	
+	const acceptRequest = async() => {
+
+	}
+
 	const openRoom = async(newRoom) => {
 		const room_messages = await joinRoom(currentRoom, newRoom.roomName, userData.phoneNumber, false)
 		setMessageHistory(room_messages.sort(sortMessagesByTimestamp))
@@ -378,7 +382,7 @@ function Main({onNavigation}) {
 	return (
 		<div className='d-flex flex-row h-100 bg-dark'>
 			<div className='d-flex flex-column align-items-center w-8 text-center'>
-				<IoMdContact className='icon' onClick={() => { setInputValueError(false); setEmptyInputError(false); setAddContactModal(true) }}/>
+				<IoMdContact className='icon' onClick={() => { setInputValueError(false); setEmptyInputError(false); setContactAlreadyAdded(false); setSameUserError(false); setAddContactModal(true) }}/>
 				<RiLoginBoxLine className='icon' onClick={ () => { setEmptyInputError(false); setInputValueError(false); setRoomAlredyJoinedError(false); setJoinRoomModal(true) }}/>
 				<IoAdd className='icon' onClick={() => { setEmptyInputError(false); setInputValueError(false); setCreateRoomModal(true)}}/>
 				<BiExpandHorizontal className='icon' onClick={() => setShowRooms(!showRooms)}/>
@@ -400,10 +404,11 @@ function Main({onNavigation}) {
 								{!room.isPrivateRoom ? 
 									<p className='mb-0'>{room.roomName}</p> 
 									: 
-									<> 
+									<div className='position-relative'>
+										{ userData.incomingRequests.includes(room.roomName) && <div style={{ width: 10, height: 10 }} className='position-absolute rounded-circle bg-white bottom-0'>&nbsp;</div> }
 										<p className='mb-0'>{contact.name} {contact.surname}</p>
 										<p className='mb-0' style={{ fontSize: 17 }}>{contact.phoneNumber}</p>
-									</>
+									</div>
 								}
 							</div>
 						})}
@@ -415,6 +420,7 @@ function Main({onNavigation}) {
 				<div className="d-flex flex-column h-100 flex-grow text-white">
 					<div className="p-3 flex-grow-1 mb-20">
 						<div className='position-relative text-center' style={{height: 60}}>
+						{currentRoom[0] === '+' && <Button className='position-absolute start-0 btn btn-success rounded-0' onClick={() => acceptRequest()}>Accept Request</Button> }
 							<h2 className='text-center d-inline-block'>{
 								(currentRoom[0] === '+') ? (contactData.name + " " + contactData.surname) : currentRoom
 							}</h2>
