@@ -63,7 +63,7 @@ function Main({onNavigation}) {
 	}
 
 	const fetchUserRoomsFromSocket = useCallback(async (phoneNumber) => {
-        if (phoneNumber === userData.phoneNumber) {
+        if (userData && phoneNumber === userData.phoneNumber) {
             try {
                 const response = await axios.post('http://localhost:3001/api/user-rooms', null, { withCredentials: true });
                 if (response.status === 200) setRooms(response.data.rooms);
@@ -107,15 +107,21 @@ function Main({onNavigation}) {
         window.addEventListener('resize', updateMaxHeight)
 
 		setMessageListener(handleMessage)
-		setRoomListener(fetchUserRoomsFromSocket)
 
 		return () => {
 			removeMessageListener(handleMessage)
-			removeRoomListener(fetchUserRooms)
 			window.removeEventListener('resize', updateMaxHeight)
 		}
 
-	  }, [fetchUserRoomsFromSocket])
+	}, [])
+
+	useEffect(() => {
+		
+		setRoomListener(fetchUserRoomsFromSocket)
+
+		return () => removeRoomListener(fetchUserRoomsFromSocket)
+
+	}, [fetchUserRoomsFromSocket])
 
 	const sendMessageToRoom = (event) => {
 
@@ -605,7 +611,7 @@ function Main({onNavigation}) {
 				</Modal.Header>
 
 				<Modal.Body>
-					<Form.Control className='shadow-none' type="text" placeholder="Enter contact phone number (ex. +381123456)" onChange={ (event) => setContactPhoneNumber(event.target.value) } />
+					<Form.Control className='shadow-none' type="text" placeholder="Enter contact phone number (ex. +38164123456)" onChange={ (event) => setContactPhoneNumber(event.target.value) } />
 					{ emptyInputError && <p className='text-danger mb-0'>Phone number can't be empty</p> }	
 					{ inputValueError && <p className='text-danger mb-0'>User does not exist</p> }
 					{ sameUserError && <p className='text-danger mb-0'>You can't add yourself as a contact</p> }
