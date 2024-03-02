@@ -43,6 +43,7 @@ function Main({onNavigation}) {
 	const [inputValueError, setInputValueError] = useState(false)
 	const [roomAlreadyJoinedError, setRoomAlredyJoinedError] = useState(false)
 	const [contactAlreadyAdded, setContactAlreadyAdded] = useState(false)
+	const [illegalRoomName, setIllegalRoomName] = useState(false)
 	
 	const inputFieldReference = useRef(null)
 	const messageBodyRef = useRef(null)
@@ -196,24 +197,16 @@ function Main({onNavigation}) {
 
 							const roomName = userData.phoneNumber + contactPhoneNumber
 
-							JoinOrCreatePrivateRoom(roomName, true)
+							joinOrCreatePrivateRoom(roomName, true)
 
-							let roomData = {
-								roomName: roomName, 
-								isPrivateRoom: true
-							}
-							roomData[userData.phoneNumber] = response.data.user1
-							roomData[contactPhoneNumber] = response.data.user2
+							return joinOrCreatePrivateRoomHelper(roomName, response)
+						}
 
-							addRoom(roomData)
-							setCurrentRoom(roomName)
-							setContactData({
-								phoneNumber: contactPhoneNumber,
-								name: roomData[contactPhoneNumber].name,
-								surname: roomData[contactPhoneNumber].surname
-							})
-							setAddContactModal(false)
-							return
+						else if (response.data.roomExists && !response.data.user1.joined) {
+
+							joinOrCreatePrivateRoom(response.data.roomName, false)
+
+							return joinOrCreatePrivateRoomHelper(response.data.roomName, response)
 						}
 
 						setContactAlreadyAdded(true)
@@ -236,7 +229,7 @@ function Main({onNavigation}) {
 		catch(error) { console.log("Error adding contact: " + error.message) } 
 	}
 
-	const JoinOrCreatePrivateRoom = async(roomName, createRoom = false) => {
+	const joinOrCreatePrivateRoom = async(roomName, createRoom = false) => {
 
 		try {
 			const room_messages = await joinRoom(currentRoom, roomName, userData.phoneNumber, createRoom)
@@ -247,10 +240,39 @@ function Main({onNavigation}) {
 		}
 	}
 
+	const joinOrCreatePrivateRoomHelper = (roomName, response) => {
+
+		let roomData = {
+			roomName: roomName, 
+			isPrivateRoom: true
+		}
+
+		roomData[userData.phoneNumber] = response.data.user1
+		roomData[contactPhoneNumber] = response.data.user2
+
+		addRoom(roomData)
+		setCurrentRoom(roomName)
+		setContactData({
+			phoneNumber: contactPhoneNumber,
+			name: roomData[contactPhoneNumber].name,
+			surname: roomData[contactPhoneNumber].surname
+		})
+		setAddContactModal(false)
+		return
+	}
+
 	const JoinOrCreateRoom = async(createRoom = false) => {
 
 		if (RoomModalName.length) {
 			
+			if (RoomModalName.includes('+')) {
+				setRoomAlredyJoinedError(false)
+				setEmptyInputError(false)
+				setInputValueError(false)
+				setIllegalRoomName(true)
+				return
+			}
+
 			const postData = {
 				roomName: RoomModalName,
 				phoneNumber: userData.phoneNumber
@@ -262,15 +284,18 @@ function Main({onNavigation}) {
 				if (response.data.roomExists) {
 
 					if (createRoom) {
-						setInputValueError(true)
+						setRoomAlredyJoinedError(false)
 						setEmptyInputError(false)
+						setIllegalRoomName(false)
+						setInputValueError(true)
 						return
 					}
 
 					if (response.data.userIsJoined) {
-						setRoomAlredyJoinedError(true)
 						setEmptyInputError(false)
 						setInputValueError(false)
+						setIllegalRoomName(false)
+						setRoomAlredyJoinedError(true)
 						return
 					}
 
@@ -280,9 +305,10 @@ function Main({onNavigation}) {
 				else {
 
 					if (!createRoom) {
-						setInputValueError(true)
+						setIllegalRoomName(false)
 						setEmptyInputError(false)
 						setRoomAlredyJoinedError(false)
+						setInputValueError(true)
 						return
 					}
 					const room_messages = await joinRoom(currentRoom, RoomModalName, userData.phoneNumber, true)
@@ -299,9 +325,10 @@ function Main({onNavigation}) {
 			}
 		}
 		else {
-			setEmptyInputError(true)
+			setIllegalRoomName(false)
 			setInputValueError(false)
 			setRoomAlredyJoinedError(false)
+			setEmptyInputError(true)
 		}
 
 	}
@@ -313,6 +340,7 @@ function Main({onNavigation}) {
 	}
 
 	const getContactData = (phoneNumber, room) => {
+
 		let contactNumber = ""
 		let phoneNumbers = []
 
@@ -333,9 +361,28 @@ function Main({onNavigation}) {
 		}
 
 		return data
+
 	}
 	
 	const acceptRequest = async() => {
+		
+		try {
+
+			const postData = {
+				phoneNumber: userData.phoneNumber,
+				roomName: currentRoom
+			}
+
+			const response = await axios.post('http://localhost:3001/api/accept-request', postData, { withCredentials: true })
+
+			if (response.status === 200) {
+				let updatedUserData = { ...userData };
+				updatedUserData.incomingRequests = updatedUserData.incomingRequests.filter(element => element !== currentRoom)
+				setUserData(updatedUserData)
+			}
+
+		}
+		catch(error) { console.log("Error accepting request: " + error.message) }
 
 	}
 
@@ -344,7 +391,6 @@ function Main({onNavigation}) {
 		setMessageHistory(room_messages.sort(sortMessagesByTimestamp))
 		setCurrentRoom(newRoom.roomName)
 		if (newRoom.isPrivateRoom) setContactData(getContactData(userData.phoneNumber, newRoom))
-		
 	}
 
 	const deleteAccount = async() => { 
@@ -420,7 +466,7 @@ function Main({onNavigation}) {
 				<div className="d-flex flex-column h-100 flex-grow text-white">
 					<div className="p-3 flex-grow-1 mb-20">
 						<div className='position-relative text-center' style={{height: 60}}>
-						{currentRoom[0] === '+' && <Button className='position-absolute start-0 btn btn-success rounded-0' onClick={() => acceptRequest()}>Accept Request</Button> }
+						{ userData.incomingRequests.includes(currentRoom) && <Button className='position-absolute start-0 btn btn-success rounded-0' onClick={() => acceptRequest()}>Accept Request</Button> }
 							<h2 className='text-center d-inline-block'>{
 								(currentRoom[0] === '+') ? (contactData.name + " " + contactData.surname) : currentRoom
 							}</h2>
@@ -457,6 +503,7 @@ function Main({onNavigation}) {
 						className="shadow-none rounded-0"
 						onChange={(event) => { setMessage(event.target.value); moveScrollBarDown() }}
 						onFocus={ () => moveScrollBarDown() }
+						disabled={userData.incomingRequests.includes(currentRoom)}
 						/>  
 						<Button type="submit" className="btn-success rounded-0"><IoSend className='text-white m-1'/></Button>
 					</Form>
@@ -502,13 +549,14 @@ function Main({onNavigation}) {
 					<Form.Control className='shadow-none' type="text" placeholder="Room name" onChange={ (event) => setRoomModalName(event.target.value) } />
 					{ emptyInputError && <p className='text-danger mb-0'>Room name can't be empty</p> }
 					{ inputValueError && <p className='text-danger mb-0'>Room already exists</p> }
+					{ illegalRoomName && <p className='text-danger mb-0'>Room has illegal character (+)</p> }
 				</Modal.Body>
 
 				<Modal.Footer> 
 					<MdOutlineDone className='settings-icon w-15' onClick={ () => JoinOrCreateRoom(true) }/> 
 				</Modal.Footer>
 			
-			</Modal>	
+			</Modal>
 
 			<Modal 
 				show={ joinRoomModal }
@@ -542,11 +590,11 @@ function Main({onNavigation}) {
 				centered>
 
 				<Modal.Header closeButton> 
-					<Modal.Title>Add contact</Modal.Title> 
+					<Modal.Title>Add Contact</Modal.Title> 
 				</Modal.Header>
 
 				<Modal.Body>
-				<Form.Control className='shadow-none' type="text" placeholder="Enter contact phone number" onChange={ (event) => setContactPhoneNumber(event.target.value) } />
+					<Form.Control className='shadow-none' type="text" placeholder="Enter contact phone number (ex. +381123456)" onChange={ (event) => setContactPhoneNumber(event.target.value) } />
 					{ emptyInputError && <p className='text-danger mb-0'>Phone number can't be empty</p> }	
 					{ inputValueError && <p className='text-danger mb-0'>User does not exist</p> }
 					{ sameUserError && <p className='text-danger mb-0'>You can't add yourself as a contact</p> }
