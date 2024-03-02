@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import Form from 'react-bootstrap/Form'
@@ -15,7 +15,7 @@ import { MdDeleteOutline, MdOutlineDone } from "react-icons/md"
 import { IoMdContact } from "react-icons/io"
 
 
-import { sendMessage, setMessageListener, removeMessageListener, joinRoom, leaveRoom } from "../Socket.js"
+import { sendMessage, joinRoom, leaveRoom, setMessageListener, removeMessageListener, setRoomListener, removeRoomListener } from "../Socket.js"
 
 function Main({onNavigation}) {
 
@@ -62,6 +62,17 @@ function Main({onNavigation}) {
 		}
 	}
 
+	const fetchUserRoomsFromSocket = useCallback(async (phoneNumber) => {
+        if (phoneNumber === userData.phoneNumber) {
+            try {
+                const response = await axios.post('http://localhost:3001/api/user-rooms', null, { withCredentials: true });
+                if (response.status === 200) setRooms(response.data.rooms);
+            } catch (error) {
+                console.log(error.message);
+            }
+        }
+    }, [userData]);
+
 	useEffect(() => {
 		moveScrollBarDown()
 	}, [currentRoom, messageHistory])
@@ -92,19 +103,19 @@ function Main({onNavigation}) {
 		fetchUserRooms()
 
 		const updateMaxHeight = () => { setMaxHeight(window.innerHeight) }
-
         updateMaxHeight()
-
         window.addEventListener('resize', updateMaxHeight)
 
 		setMessageListener(handleMessage)
+		setRoomListener(fetchUserRoomsFromSocket)
 
 		return () => {
 			removeMessageListener(handleMessage)
+			removeRoomListener(fetchUserRooms)
 			window.removeEventListener('resize', updateMaxHeight)
 		}
 
-	  }, [])
+	  }, [fetchUserRoomsFromSocket])
 
 	const sendMessageToRoom = (event) => {
 

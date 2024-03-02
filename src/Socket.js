@@ -1,15 +1,24 @@
-import axios from 'axios';
-import { io } from 'socket.io-client';
+import axios from 'axios'
+import { io } from 'socket.io-client'
 
-let socket = null;
+let socket = null
+let messageListener = null
+let roomListener = null
 
 const socket_connect = () => {
-    const URL = 'http://localhost:3001';
+    const URL = 'http://localhost:3001'
 
-    socket = io(URL);
+    socket = io(URL)
 
-    socket.on('message', handleIncomingMessage);
-    socket.on("connect_error", (error) => { console.log("Error initiating WebSocket connection: " + error.message) });
+    socket.on('message', (newMessage) => {
+        if (messageListener && typeof messageListener === 'function') messageListener(newMessage)
+    })
+
+    socket.on('update-rooms', (phoneNumber) => {
+        if (roomListener && typeof roomListener === 'function') roomListener(phoneNumber)
+    })
+
+    socket.on("connect_error", (error) => { console.log("Error initiating WebSocket connection: " + error.message) })
 }
 
 export async function joinRoom(oldRoom, newRoom, phoneNumber, createRoom) {
@@ -47,19 +56,15 @@ export function sendMessage(roomName, messageBody, senderNumber, senderColor) {
 			senderNumber: senderNumber,
             senderColor: senderColor,
 			messageBody: messageBody
-		});
+		})
     }
     else console.log("Error: Message not sent (socket = null).")
 }
 
-let messageListener = null
-
-// Show new message to screen (push to messageHistory array)
-function handleIncomingMessage(newMessage) {
-    if (messageListener && typeof messageListener === 'function') messageListener(newMessage)
-}
-
 export function setMessageListener(listener) { messageListener = listener }
 export function removeMessageListener() { messageListener = null }
+
+export function setRoomListener(listener) { roomListener = listener }
+export function removeRoomListener() { roomListener = null }
 
 export default socket_connect
