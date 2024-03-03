@@ -4,22 +4,23 @@ import { useNavigate } from 'react-router-dom'
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import Modal from 'react-bootstrap/Modal'
-import Tab from 'react-bootstrap/Tab';
-import Tabs from 'react-bootstrap/Tabs';
+import Tab from 'react-bootstrap/Tab'
+import Tabs from 'react-bootstrap/Tabs'
 
 import { Wheel } from '@uiw/react-color'
 
 import axios from 'axios'
 
 import './Main.css'
-import { RiLogoutBoxLine, RiLoginBoxLine } from "react-icons/ri"
-import { IoSettingsOutline, IoSend, IoAdd } from "react-icons/io5"
+import { RiLogoutBoxLine } from "react-icons/ri"
+import { IoSettingsOutline, IoSend, IoPersonRemove, IoCreateOutline } from "react-icons/io5"
 import { BiExpandHorizontal } from "react-icons/bi"
 import { MdDeleteOutline, MdOutlineDone } from "react-icons/md"
 import { IoMdContact } from "react-icons/io"
-import { FaCheck } from "react-icons/fa";
+import { FaCheckCircle  } from "react-icons/fa"
+import { AiOutlineUsergroupDelete, AiOutlineUsergroupAdd } from "react-icons/ai";
 
-import { sha256 } from 'js-sha256';
+import { sha256 } from 'js-sha256'
 
 import { sendMessage, joinRoom, leaveRoom, setMessageListener, removeMessageListener, setRoomListener, removeRoomListener } from "../Socket.js"
 
@@ -55,6 +56,7 @@ function Main({onNavigation}) {
 	const messageBodyRef = useRef(null)
 
 	const [maxHeight, setMaxHeight] = useState(window.innerHeight)
+	const [maxWidth, setMaxWidth] = useState(window.innerWidth)
 
 	const [message, setMessage] = useState("")
 	const [messageHistory, setMessageHistory] = useState([])
@@ -68,7 +70,16 @@ function Main({onNavigation}) {
 	const [colorPickerValue, setColorPickerValue] = useState("#bcd4cb")
 	const [colorApplied, setColorApplied] = useState(false)
 
-	const handleMessage = (message) => { setMessageHistory(prevMessages => [...prevMessages, message]) }
+	const handleMessage = useCallback((message) => {
+        setMessageHistory(prevMessages => [...prevMessages, message]);
+
+        // update room with latest message
+        const tempRooms = [...rooms];
+		tempRooms.forEach((room) => {
+			if (room.roomName === message.roomName) room.latestTimestamp = message.timestamp
+		})
+        setRooms(tempRooms);
+    }, [rooms]);
 
 	const moveScrollBarDown = () => {
 		if (messageBodyRef.current) {
@@ -77,8 +88,14 @@ function Main({onNavigation}) {
 		}
 	}
 
-	const fetchUserRoomsFromSocket = useCallback(async (phoneNumber) => {
+	const fetchUserRoomsFromSocket = useCallback(async (phoneNumber, roomName) => {
+
         if (userData && phoneNumber === userData.phoneNumber) {
+
+			let tempData = { ...userData }
+			tempData.incomingRequests = [...tempData.incomingRequests, roomName]
+			setUserData(tempData)
+
             try {
                 const response = await axios.post('http://localhost:3001/api/user-rooms', null, { withCredentials: true });
                 if (response.status === 200) setRooms(response.data.rooms);
@@ -117,15 +134,19 @@ function Main({onNavigation}) {
 		fetchUserData()
 		fetchUserRooms()
 
-		const updateMaxHeight = () => { setMaxHeight(window.innerHeight) }
-        updateMaxHeight()
-        window.addEventListener('resize', updateMaxHeight)
+		const updateWindowSizes = () => {
+			setMaxHeight(window.innerHeight)
+			setMaxWidth(window.innerWidth)
+		}
 
-		setMessageListener(handleMessage)
+        updateWindowSizes()
+        window.addEventListener('resize', updateWindowSizes)
+
+		// setMessageListener(handleMessage)
 
 		return () => {
-			removeMessageListener(handleMessage)
-			window.removeEventListener('resize', updateMaxHeight)
+			// removeMessageListener(handleMessage)
+			window.removeEventListener('resize', updateWindowSizes)
 		}
 
 	}, [])
@@ -133,10 +154,14 @@ function Main({onNavigation}) {
 	useEffect(() => {
 		
 		setRoomListener(fetchUserRoomsFromSocket)
+		setMessageListener(handleMessage)
 
-		return () => removeRoomListener(fetchUserRoomsFromSocket)
+		return () => {
+			removeRoomListener(fetchUserRoomsFromSocket)
+			removeMessageListener(handleMessage)
+		}
 
-	}, [fetchUserRoomsFromSocket])
+	}, [fetchUserRoomsFromSocket, handleMessage])
 
 	const sendMessageToRoom = (event) => {
 
@@ -423,6 +448,7 @@ function Main({onNavigation}) {
 		setMessageHistory(room_messages.sort(sortMessagesByTimestamp))
 		setCurrentRoom(newRoom.roomName)
 		if (newRoom.isPrivateRoom) setContactData(getContactData(userData.phoneNumber, newRoom))
+		if (maxWidth <= 700) setShowRooms(false)
 	}
 
 	const deleteAccount = async() => { 
@@ -527,10 +553,10 @@ function Main({onNavigation}) {
 
 	return (
 		<div className='d-flex flex-row h-100 bg-dark'>
-			<div className='d-flex flex-column align-items-center w-8 text-center'>
+			<div style={{ minWidth: 40 }} className={(showRooms ? "" : "bg-custom-grey ") + `icons-div d-flex flex-column align-items-center w-8 text-center`}>
 				<IoMdContact className='icon' onClick={() => { setInputValueError(false); setEmptyInputError(false); setContactAlreadyAdded(false); setSameUserError(false); setAddContactModal(true) }}/>
-				<RiLoginBoxLine className='icon' onClick={ () => { setEmptyInputError(false); setInputValueError(false); setRoomAlredyJoinedError(false); setJoinRoomModal(true) }}/>
-				<IoAdd className='icon' onClick={() => { setEmptyInputError(false); setInputValueError(false); setCreateRoomModal(true)}}/>
+				<AiOutlineUsergroupAdd className='icon' onClick={ () => { setEmptyInputError(false); setInputValueError(false); setRoomAlredyJoinedError(false); setJoinRoomModal(true) }}/>
+				<IoCreateOutline className='icon' onClick={() => { setEmptyInputError(false); setInputValueError(false); setCreateRoomModal(true)}}/>
 				<BiExpandHorizontal className='icon' onClick={() => setShowRooms(!showRooms)}/>
 				<div className='flex-grow-1'></div>
 				<RiLogoutBoxLine className='icon' onClick={logOut} />
@@ -538,22 +564,31 @@ function Main({onNavigation}) {
 			</div>
 
 			{ showRooms &&
-				<div className='h-100 w-20 text-white text-break text-center bg-custom-grey'>
-					<h1 className='mt-3 mb-4'>Rooms</h1>
+				<div style={{ minWidth: 280 }} className='show-rooms h-100 w-20 text-white text-break text-center bg-custom-grey'>
+					<p style={{ fontSize: 30 }} className='mt-3 mb-4'>Rooms</p>
 					<div style={{ maxHeight: maxHeight - 150, overflowY: 'auto' }} className='hideScrollbar'>
 						{rooms.sort(sortRoomsByLatestMessage).map((room) => {
+
 							let contact = {}
+
+							const latestMessageDate = room.latestTimestamp ? new Date(room.latestTimestamp) : new Date(Date.now())
+							const formattedHours = String(latestMessageDate.getHours()).padStart(2, '0')
+							const formattedMinutes = String(latestMessageDate.getMinutes()).padStart(2, '0')
 
 							if (room.isPrivateRoom) contact = getContactData(userData.phoneNumber, room)
 
 							return <div style={{ fontSize: 22 }} key={room.roomName} tabIndex={-1} onClick={() => openRoom(room)} className='bg-success rounded-1 my-2 mx-3 cursor-pointer p-3'>
 								{!room.isPrivateRoom ? 
-									<p className='mb-0'>{room.roomName}</p> 
-									: 
+									<div>
+										<p className='mb-0'>{room.roomName}</p>
+										<p style={{ fontSize: 14 }} className='mb-0 text-end'>{formattedHours}:{formattedMinutes}</p>
+									</div>
+									:
 									<div className='position-relative'>
 										{ userData.incomingRequests.includes(room.roomName) && <div style={{ width: 10, height: 10 }} className='position-absolute rounded-circle bg-white bottom-0'>&nbsp;</div> }
 										<p className='mb-0'>{contact.name} {contact.surname}</p>
 										<p className='mb-0' style={{ fontSize: 17 }}>{contact.phoneNumber}</p>
+										<p style={{ fontSize: 14 }} className='mb-0 text-end'>{formattedHours}:{formattedMinutes}</p>
 									</div>
 								}
 							</div>
@@ -562,15 +597,27 @@ function Main({onNavigation}) {
 				</div>
 			}
 
-			{ currentRoom &&
-				<div className="d-flex flex-column h-100 flex-grow text-white">
-					<div className="p-3 flex-grow-1 mb-20">
+			{ currentRoom && !(showRooms && maxWidth <= 700 ) &&
+				<div style={{ minWidth: 0 }} className="d-flex flex-column h-100 flex-grow text-white">
+					<div className="p-3 flex-grow mb-20">
 						<div className='position-relative text-center' style={{height: 60}}>
-						{ userData.incomingRequests.includes(currentRoom) && <Button className='position-absolute start-0 btn btn-success rounded-0' onClick={() => acceptRequest()}>Accept Request</Button> }
-							<h2 className='text-center d-inline-block'>{
+						{ userData.incomingRequests.includes(currentRoom) &&
+							((maxWidth <= 900) ?
+							<FaCheckCircle style={{ width: 30, height: 30 }} className='position-absolute start-0 btn btn-success rounded-circle mt-1 p-1' onClick={() => acceptRequest()} />
+							:
+							<Button className='position-absolute start-0 btn btn-success rounded-0 mt-1' onClick={() => acceptRequest()}>Accept Request</Button>)
+						}
+							<p style={{ fontSize: 28 }} className='room-name text-center d-inline-block'>{
 								(currentRoom[0] === '+') ? (contactData.name + " " + contactData.surname) : currentRoom
-							}</h2>
-							<Button className='position-absolute end-0 btn btn-danger rounded-0' onClick={() => leaveCurrentRoom()}>{currentRoom[0] === '+' ? "Remove Contact" : "Leave"}</Button>
+							}</p>
+							<Button className='d-after-900 position-absolute end-0 btn btn-danger rounded-0 mt-1' onClick={() => leaveCurrentRoom()}>{currentRoom[0] === '+' ? "Remove Contact" : "Leave"}</Button>
+							<div className='d-before-900 position-absolute end-0'>
+								{currentRoom[0] === '+' ?
+									<IoPersonRemove onClick={() => leaveCurrentRoom()} style={{ width: 30, height: 30 }} className='btn btn-danger rounded-circle p-1 mt-1' />
+								:
+									<AiOutlineUsergroupDelete onClick={() => leaveCurrentRoom()} style={{ width: 30, height: 30 }} className='btn btn-danger rounded-circle p-1 mt-1' />
+								}
+							</div>
 						</div>
 
 						<div ref={messageBodyRef} className='pt-3 hideScrollbar' style={{ maxHeight: maxHeight - 180, overflowY: 'auto' }}>
@@ -587,7 +634,7 @@ function Main({onNavigation}) {
 												<p className='mb-0 text-secondary text-end'>{formattedHours}:{formattedMinutes}</p>
 											</div>
 											:
-											<p className='text-center text-secondary mb-0'>{message.phoneNumber} has {message.type} the chat</p>
+											<p className='text-center text-secondary mt-2 mb-2'>{message.phoneNumber} has {message.type} the chat</p>
 										}
 									</div>
 								)
@@ -625,12 +672,12 @@ function Main({onNavigation}) {
 					<Tabs defaultActiveKey="account" id="uncontrolled-tab-example" className="mb-3">
 						<Tab eventKey="account" title="Account">
 							<div className='d-flex flex-row w-100 bg-grey'>
-								<p className='w-85 m-0'>Delete your account</p>
-								<MdDeleteOutline className='settings-icon w-15' onClick={deleteAccount}/>
+								<p className='w-85 mb-0 mt-1'>Delete your account</p>
+								<MdDeleteOutline className='apply-icon apply-icon-hover' onClick={deleteAccount}/>
 							</div>
 						</Tab>
 						<Tab eventKey="security" title="Security">
-							<div className='d-flex flex-column w-100 bg-grey' style={{ paddingLeft: 100, paddingRight: 100 }}>
+							<div className='d-flex flex-column w-100 bg-grey mx-auto' style={{ maxWidth: 300 }}>
 								{ successResetPassword ? 
 									<h4>Registration successful</h4>
 									: 
@@ -674,7 +721,7 @@ function Main({onNavigation}) {
 									</div>
 									<div className='d-flex align-items-center justify-content-center my-2 position-relative'>
 										<Button className='px-4 rounded-0 btn-success' onClick={changeUserColor}>Apply</Button>
-										{ colorApplied && <FaCheck className='apply-icon position-absolute start-100 ms-2'/> }
+										{ colorApplied && <FaCheckCircle className='apply-icon position-absolute start-100 ms-2'/> }
 									</div>
 								</div>
 							</>
@@ -707,7 +754,7 @@ function Main({onNavigation}) {
 				</Modal.Body>
 
 				<Modal.Footer> 
-					<MdOutlineDone className='settings-icon w-15' onClick={ () => JoinOrCreateRoom(true) }/> 
+					<MdOutlineDone className='apply-icon apply-icon-hover' onClick={ () => JoinOrCreateRoom(true) }/> 
 				</Modal.Footer>
 			
 			</Modal>
@@ -731,7 +778,7 @@ function Main({onNavigation}) {
 				</Modal.Body>
 
 				<Modal.Footer> 
-					<MdOutlineDone className='settings-icon w-15' onClick={ () => JoinOrCreateRoom() }/> 
+					<MdOutlineDone className='apply-icon apply-icon-hover' onClick={ () => JoinOrCreateRoom() }/> 
 				</Modal.Footer>
 			
 			</Modal>
@@ -756,7 +803,7 @@ function Main({onNavigation}) {
 				</Modal.Body>
 
 				<Modal.Footer> 
-					<MdOutlineDone className='settings-icon w-15' onClick={ () => addContact() }/> 
+					<MdOutlineDone className='apply-icon apply-icon-hover' onClick={ () => addContact() }/> 
 				</Modal.Footer>
 			
 			</Modal>

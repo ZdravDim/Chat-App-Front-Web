@@ -34,10 +34,6 @@
   width: 85% !important;
 }
 
-.w-15 {
-  width: 15% !important;
-}
-
 .icon:hover {
   color: lightgrey !important;
 }
@@ -56,12 +52,9 @@
   height: min(80%, 35px);
 }
 
-.settings-icon {
-  color: #292c31;
-  height: auto;
+.apply-icon-hover:hover {
+  color: #16171a;
   cursor: pointer;
-  width: min(1.5vw, 30px);
-  height: min(1.5vw, 30px);
 }
 
 .settings-icon:hover {
@@ -69,7 +62,7 @@
 }
 
 .message-width {
-  max-width: 45%;
+  max-width: 70%;
   width: fit-content;
 }
 
@@ -97,4 +90,42 @@
 
 .nav-link {
   color: black !important;
+}
+
+.d-before-900 {
+  display: none !important
+}
+
+.d-after-900 {
+  display: inline-block !important;
+}
+
+@media only screen and (max-width: 700px) {
+  .show-rooms {
+    width: 100% !important;
+  }
+}
+
+@media only screen and (max-width: 900px) {
+
+  .icons-div {
+    width: 40px !important;
+  }
+
+  .room-name {
+    font-size: x-large !important;
+  }
+
+  .message-container {
+    font-size: small !important;
+  }
+
+  .d-after-900 {
+    display: none !important;
+  }
+
+  .d-before-900 {
+    display: inline-block !important
+  }
+
 }

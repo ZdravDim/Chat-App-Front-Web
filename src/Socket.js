@@ -14,8 +14,8 @@ const socket_connect = () => {
         if (messageListener && typeof messageListener === 'function') messageListener(newMessage)
     })
 
-    socket.on('update-rooms', (phoneNumber) => {
-        if (roomListener && typeof roomListener === 'function') roomListener(phoneNumber)  
+    socket.on('update-rooms', (phoneNumber, roomName) => {
+        if (roomListener && typeof roomListener === 'function') roomListener(phoneNumber, roomName)  
     })
 
     socket.on("connect_error", (error) => { console.log("Error initiating WebSocket connection: " + error.message) })
