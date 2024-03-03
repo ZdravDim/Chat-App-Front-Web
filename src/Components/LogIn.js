@@ -20,9 +20,9 @@ function LogIn({onNavigation}) {
 
         event.preventDefault()
 
-        const form = event.currentTarget;
+        const form = event.currentTarget
 
-        const phoneInputElement = form.querySelector('input.custom-input');
+        const phoneInputElement = form.querySelector('input.custom-input')
         phoneInputElement.setCustomValidity('')
 
         if (form.checkValidity() === false || phoneInputElement.value.length < 6) {
@@ -37,7 +37,7 @@ function LogIn({onNavigation}) {
         var body = {
             phoneNumber: phoneNumber,
             password: sha256(password)
-        };
+        }
 
         try {
 

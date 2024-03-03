@@ -10,7 +10,7 @@ import Form from 'react-bootstrap/Form'
 
 import { auth, RecaptchaVerifier, signInWithPhoneNumber } from '../Firebase.config'
 
-import { sha256 } from 'js-sha256';
+import { sha256 } from 'js-sha256'
 
 import './PhoneSignUp.css'
 import axios from 'axios'
@@ -97,34 +97,34 @@ function PhoneSignIn() {
 
         event.preventDefault()
 
-        const form = event.currentTarget;
+        const form = event.currentTarget
 
         if (form.checkValidity() === false || password1 !== password2) {
-            event.stopPropagation();
+            event.stopPropagation()
             if (password1 !== password2) {
-                form.password2.setCustomValidity('Passwords must match');
-                setPasswordsDifferent(true);
+                form.password2.setCustomValidity('Passwords must match')
+                setPasswordsDifferent(true)
             }
             else {
-                form.password2.setCustomValidity('');
-                setPasswordsDifferent(false);
+                form.password2.setCustomValidity('')
+                setPasswordsDifferent(false)
             }
-            form.classList.add('was-validated');
-            return;
+            form.classList.add('was-validated')
+            return
         }
 
-        const hashedPassword = sha256.create().update(password1).hex();
+        const hashedPassword = sha256.create().update(password1).hex()
 
         const userData = {
             phoneNumber: phoneNumber,
             name: name,
             surname: surname,
             password: hashedPassword 
-        };
+        }
 
         try {
-            const response = await axios.post('http://localhost:3001/api/sign-up', userData, { withCredentials: true });
-            if (response.status === 200) setDisplayLevel(3);
+            const response = await axios.post('http://localhost:3001/api/sign-up', userData, { withCredentials: true })
+            if (response.status === 200) setDisplayLevel(3)
         }
         catch(error) {
             console.log(error.message)

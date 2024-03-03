@@ -18,7 +18,7 @@ import { BiExpandHorizontal } from "react-icons/bi"
 import { MdDeleteOutline, MdOutlineDone } from "react-icons/md"
 import { IoMdContact } from "react-icons/io"
 import { FaCheckCircle  } from "react-icons/fa"
-import { AiOutlineUsergroupDelete, AiOutlineUsergroupAdd } from "react-icons/ai";
+import { AiOutlineUsergroupDelete, AiOutlineUsergroupAdd } from "react-icons/ai"
 
 import { sha256 } from 'js-sha256'
 
@@ -71,15 +71,16 @@ function Main({onNavigation}) {
 	const [colorApplied, setColorApplied] = useState(false)
 
 	const handleMessage = useCallback((message) => {
-        setMessageHistory(prevMessages => [...prevMessages, message]);
+
+        setMessageHistory(prevMessages => [...prevMessages, message])
 
         // update room with latest message
-        const tempRooms = [...rooms];
+        const tempRooms = [...rooms]
 		tempRooms.forEach((room) => {
 			if (room.roomName === message.roomName) room.latestTimestamp = message.timestamp
 		})
-        setRooms(tempRooms);
-    }, [rooms]);
+        setRooms(tempRooms)
+    }, [rooms])
 
 	const moveScrollBarDown = () => {
 		if (messageBodyRef.current) {
@@ -97,13 +98,13 @@ function Main({onNavigation}) {
 			setUserData(tempData)
 
             try {
-                const response = await axios.post('http://localhost:3001/api/user-rooms', null, { withCredentials: true });
-                if (response.status === 200) setRooms(response.data.rooms);
+                const response = await axios.post('http://localhost:3001/api/user-rooms', null, { withCredentials: true })
+                if (response.status === 200) setRooms(response.data.rooms)
             } catch (error) {
-                console.log(error.message);
+                console.log(error.message)
             }
         }
-    }, [userData]);
+    }, [userData])
 
 	useEffect(() => {
 		moveScrollBarDown()
@@ -433,7 +434,7 @@ function Main({onNavigation}) {
 			const response = await axios.post('http://localhost:3001/api/accept-request', postData, { withCredentials: true })
 
 			if (response.status === 200) {
-				let updatedUserData = { ...userData };
+				let updatedUserData = { ...userData }
 				updatedUserData.incomingRequests = updatedUserData.incomingRequests.filter(element => element !== currentRoom)
 				setUserData(updatedUserData)
 			}
@@ -487,24 +488,24 @@ function Main({onNavigation}) {
 		
 		event.preventDefault()
 		
-        const form = event.currentTarget;
+        const form = event.currentTarget
 
         if (form.checkValidity() === false || newPassword1 !== newPassword2) {
-            event.stopPropagation();
+            event.stopPropagation()
             if (newPassword1 !== newPassword2) {
-                form.newPassword2.setCustomValidity('Passwords must match');
-                setPasswordsDifferent(true);
+                form.newPassword2.setCustomValidity('Passwords must match')
+                setPasswordsDifferent(true)
             }
             else {
-                form.newPassword2.setCustomValidity('');
-                setPasswordsDifferent(false);
+                form.newPassword2.setCustomValidity('')
+                setPasswordsDifferent(false)
             }
-            form.classList.add('was-validated');
-            return;
+            form.classList.add('was-validated')
+            return
         }
 
-        const oldHashedPassword = sha256.create().update(oldPassword).hex();
-        const newHashedPassword = sha256.create().update(newPassword1).hex();
+        const oldHashedPassword = sha256.create().update(oldPassword).hex()
+        const newHashedPassword = sha256.create().update(newPassword1).hex()
 
 		try {
 
