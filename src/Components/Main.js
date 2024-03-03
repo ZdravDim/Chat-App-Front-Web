@@ -7,6 +7,8 @@ import Modal from 'react-bootstrap/Modal'
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 
+import { Wheel } from '@uiw/react-color'
+
 import axios from 'axios'
 
 import './Main.css'
@@ -64,6 +66,7 @@ function Main({onNavigation}) {
 	const [successResetPassword, setSuccessResetPassword] = useState(false)
 
 	const [colorPickerValue, setColorPickerValue] = useState("#bcd4cb")
+	const [colorApplied, setColorApplied] = useState(false)
 
 	const handleMessage = (message) => { setMessageHistory(prevMessages => [...prevMessages, message]) }
 
@@ -505,10 +508,16 @@ function Main({onNavigation}) {
 
 	const changeUserColor = async() => {
 		try {
-			const postData = { color: colorPickerValue }
+			const postData = {
+				phoneNumber: userData.phoneNumber,
+				userColor: colorPickerValue
+			}
 			const response = await axios.post('http://localhost:3001/api/change-color', postData, { withCredentials: true })
 			if (response.status === 200) {
-
+				const tempData = { ...userData }
+				tempData.userColor = colorPickerValue
+				setUserData(tempData)
+				setColorApplied(true)
 			}
 		}
 		catch(error) {
@@ -652,13 +661,9 @@ function Main({onNavigation}) {
 						<Tab eventKey="appearance" title="Appearance">
 							<>
 								<div className='d-flex align-items-center justify-content-center'>
-									<Form.Label className='me-3' htmlFor="colorInput">Choose your color</Form.Label>
-									<Form.Control
-										type="color"
-										id="colorInput"
-										defaultValue ={ userData ? userData.userColor : '#bcd4cb'}
-										title="Choose your color"
-										onChange={(event) => setColorPickerValue(event.target.value)}
+									<Wheel
+										color={colorPickerValue}
+										onChange={(color) => { setColorApplied(false); setColorPickerValue(color.hex) }}
 									/>
 								</div>
 								<div className='d-flex flex-column align-items-center justify-content-center'>
@@ -667,9 +672,9 @@ function Main({onNavigation}) {
 										<p className='mb-0 text-white'>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
 										<p className='mb-0 text-secondary text-end'>12:34</p>
 									</div>
-									<div className='d-flex align-items-center justify-content-center my-2'>
+									<div className='d-flex align-items-center justify-content-center my-2 position-relative'>
 										<Button className='px-4 rounded-0 btn-success' onClick={changeUserColor}>Apply</Button>
-										<FaCheck className='apply-icon ms-2'/>
+										{ colorApplied && <FaCheck className='apply-icon position-absolute start-100 ms-2'/> }
 									</div>
 								</div>
 							</>
