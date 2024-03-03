@@ -46,6 +46,12 @@
   margin-top: 1em;
   color: white;
   cursor: pointer;
+  width: min(80%, 50px);
+  height: min(80%, 50px);
+}
+
+.apply-icon {
+  color: #292c31;
   width: min(80%, 35px);
   height: min(80%, 35px);
 }
@@ -79,4 +85,16 @@
 .hideScrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none
+}
+
+.nav-link.active {
+  border-bottom: 5px solid #198754 !important;
+}
+
+.nav-link:not(.active):hover {
+  border-bottom: 5px solid #9ac9b3 !important;
+}
+
+.nav-link {
+  color: black !important;
 }

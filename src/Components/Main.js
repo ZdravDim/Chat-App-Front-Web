@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import Modal from 'react-bootstrap/Modal'
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
 
 import axios from 'axios'
 
@@ -13,7 +15,9 @@ import { IoSettingsOutline, IoSend, IoAdd } from "react-icons/io5"
 import { BiExpandHorizontal } from "react-icons/bi"
 import { MdDeleteOutline, MdOutlineDone } from "react-icons/md"
 import { IoMdContact } from "react-icons/io"
+import { FaCheck } from "react-icons/fa";
 
+import { sha256 } from 'js-sha256';
 
 import { sendMessage, joinRoom, leaveRoom, setMessageListener, removeMessageListener, setRoomListener, removeRoomListener } from "../Socket.js"
 
@@ -45,13 +49,21 @@ function Main({onNavigation}) {
 	const [contactAlreadyAdded, setContactAlreadyAdded] = useState(false)
 	const [illegalRoomName, setIllegalRoomName] = useState(false)
 	
-	const inputFieldReference = useRef(null)
+	const inputFieldRef = useRef(null)
 	const messageBodyRef = useRef(null)
 
 	const [maxHeight, setMaxHeight] = useState(window.innerHeight)
 
 	const [message, setMessage] = useState("")
 	const [messageHistory, setMessageHistory] = useState([])
+
+	const [oldPassword, setOldPassword] = useState("")
+	const [newPassword1, setNewPassword1] = useState("")
+	const [newPassword2, setNewPassword2] = useState("")
+	const [passwordsDifferent, setPasswordsDifferent] = useState(false)
+	const [successResetPassword, setSuccessResetPassword] = useState(false)
+
+	const [colorPickerValue, setColorPickerValue] = useState("#bcd4cb")
 
 	const handleMessage = (message) => { setMessageHistory(prevMessages => [...prevMessages, message]) }
 
@@ -136,7 +148,7 @@ function Main({onNavigation}) {
 		
 		// Clear the message input field after sending
 		setMessage("")
-		inputFieldReference.current.value = ""
+		inputFieldRef.current.value = ""
 	}
 
 	const addRoom = (room) => {
@@ -442,6 +454,68 @@ function Main({onNavigation}) {
 
 	}
 
+	const submitChangePassword = async(event) => {
+		
+		event.preventDefault()
+		
+        const form = event.currentTarget;
+
+        if (form.checkValidity() === false || newPassword1 !== newPassword2) {
+            event.stopPropagation();
+            if (newPassword1 !== newPassword2) {
+                form.newPassword2.setCustomValidity('Passwords must match');
+                setPasswordsDifferent(true);
+            }
+            else {
+                form.newPassword2.setCustomValidity('');
+                setPasswordsDifferent(false);
+            }
+            form.classList.add('was-validated');
+            return;
+        }
+
+        const oldHashedPassword = sha256.create().update(oldPassword).hex();
+        const newHashedPassword = sha256.create().update(newPassword1).hex();
+
+		try {
+
+			const postUserData = {
+				phoneNumber: userData.phoneNumber,
+				oldPassword: oldHashedPassword,
+				newPassword: newHashedPassword
+			}
+
+			const response = await axios.post('http://localhost:3001/api/reset-password', postUserData, { withCredentials: true })
+			
+			if (response.status === 200) {
+				if (response.data.success) {
+					setSuccessResetPassword(true)
+					alert("success")
+					return
+				} 
+				
+				setInputValueError(true) 
+
+			}
+		} 
+		catch(error) {
+			console.log("Error changing password: " + error.message)
+		}
+	}
+
+	const changeUserColor = async() => {
+		try {
+			const postData = { color: colorPickerValue }
+			const response = await axios.post('http://localhost:3001/api/change-color', postData, { withCredentials: true })
+			if (response.status === 200) {
+
+			}
+		}
+		catch(error) {
+			console.log("Error changing color: " + error.message)
+		}
+	} 
+
 	return (
 		<div className='d-flex flex-row h-100 bg-dark'>
 			<div className='d-flex flex-column align-items-center w-8 text-center'>
@@ -451,7 +525,7 @@ function Main({onNavigation}) {
 				<BiExpandHorizontal className='icon' onClick={() => setShowRooms(!showRooms)}/>
 				<div className='flex-grow-1'></div>
 				<RiLogoutBoxLine className='icon' onClick={logOut} />
-				<IoSettingsOutline className='icon mb-3' onClick= { () => setSettingsModal(true) }/>
+				<IoSettingsOutline className='icon mb-3' onClick= { () => { setSuccessResetPassword(false); setNewPassword1(""); setNewPassword2(""); setPasswordsDifferent(false); setInputValueError(false); setSettingsModal(true) } }/>
 			</div>
 
 			{ showRooms &&
@@ -514,7 +588,7 @@ function Main({onNavigation}) {
 				
 					<Form onSubmit={sendMessageToRoom} className='d-flex w-100 p-3'>
 						<Form.Control
-						ref={inputFieldReference}
+						ref={inputFieldRef}
 						type="text"
 						placeholder="Enter a message..."
 						className="shadow-none rounded-0"
@@ -538,13 +612,71 @@ function Main({onNavigation}) {
 					<Modal.Title>Settings</Modal.Title> 
 				</Modal.Header>
 
-				<Modal.Body>
-					<div className='d-flex flex-row w-100 bg-grey'>
-						<p className='w-85 m-0'>Delete your account.</p>
-						<MdDeleteOutline className='settings-icon w-15' onClick={deleteAccount}/>
-					</div>
-        		</Modal.Body>
-
+				<Modal.Body className>
+					<Tabs defaultActiveKey="account" id="uncontrolled-tab-example" className="mb-3">
+						<Tab eventKey="account" title="Account">
+							<div className='d-flex flex-row w-100 bg-grey'>
+								<p className='w-85 m-0'>Delete your account</p>
+								<MdDeleteOutline className='settings-icon w-15' onClick={deleteAccount}/>
+							</div>
+						</Tab>
+						<Tab eventKey="security" title="Security">
+							<div className='d-flex flex-column w-100 bg-grey' style={{ paddingLeft: 100, paddingRight: 100 }}>
+								{ successResetPassword ? 
+									<h4>Registration successful</h4>
+									: 
+									<>
+										<h4 className='mb-4 mt-3 text-center'>Reset your password</h4>
+										<Form className='d-flex flex-column' onSubmit={ submitChangePassword } noValidate>
+											<Form.Group>
+												<Form.Label>Old password</Form.Label>
+												<Form.Control className='shadow-none rounded-0' size="sm" type="password" onChange={(event) => setOldPassword(event.target.value)} required />
+											</Form.Group>
+											<Form.Group>
+												<Form.Label>New password</Form.Label>
+												<Form.Control className='shadow-none rounded-0' size="sm" type="password" onChange={(event) => setNewPassword1(event.target.value)} required />
+											</Form.Group>
+											<Form.Group>
+												<Form.Label>Re-enter new password</Form.Label>
+												<Form.Control name="newPassword2" className='shadow-none rounded-0' size="sm" type="password" onChange={(event) => setNewPassword2(event.target.value)} required />
+											</Form.Group>
+											
+											{ passwordsDifferent && <p className='text-danger my-0'>Passwords not matching</p> }
+											{ inputValueError && <p className='text-danger mb-0'>Wrong old password</p> }
+											<Button type="submit" className='mt-4 rounded-0 btn-success mx-auto'>Reset password</Button>
+										</Form>
+									</>
+								}
+							</div>
+						</Tab>
+						<Tab eventKey="appearance" title="Appearance">
+							<>
+								<div className='d-flex align-items-center justify-content-center'>
+									<Form.Label className='me-3' htmlFor="colorInput">Choose your color</Form.Label>
+									<Form.Control
+										type="color"
+										id="colorInput"
+										defaultValue ={ userData ? userData.userColor : '#bcd4cb'}
+										title="Choose your color"
+										onChange={(event) => setColorPickerValue(event.target.value)}
+									/>
+								</div>
+								<div className='d-flex flex-column align-items-center justify-content-center'>
+									<div className={`message-container bg-custom-grey mb-1 mt-2 py-2 px-3 mx-4`}>
+										<p className='mb-0' style={{ color: colorPickerValue }}>{userData ? userData.phoneNumber : "+38164123456"}</p>
+										<p className='mb-0 text-white'>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
+										<p className='mb-0 text-secondary text-end'>12:34</p>
+									</div>
+									<div className='d-flex align-items-center justify-content-center my-2'>
+										<Button className='px-4 rounded-0 btn-success' onClick={changeUserColor}>Apply</Button>
+										<FaCheck className='apply-icon ms-2'/>
+									</div>
+								</div>
+							</>
+						</Tab>
+					</Tabs>
+        		</Modal.Body> 
+				
 				<Modal.Footer>
 					<Button className='btn-success' onClick={() => setSettingsModal(false)}>Close</Button>
 				</Modal.Footer>
