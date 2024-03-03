@@ -26,3 +26,27 @@
     background: rgb(45,45,45);
     background: radial-gradient(circle, rgba(45,45,45,1) 20%, rgba(0,0,0,1) 100%);
 }
+
+@media only screen and (max-width: 700px) {
+
+    .header-font {
+        font-size: xx-large !important;
+    }
+
+    .header-font-bold {
+        font-size: 28px !important;
+    }
+
+    .h-580 {
+        height: 60% !important;
+        min-height: 400px !important;
+        max-height: 450px !important;
+    }
+    
+    .w-580 {
+        width: 90% !important;
+        min-width: 320px !important;
+        max-width: 400px !important;
+    }
+
+}

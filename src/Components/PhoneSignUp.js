@@ -23,7 +23,7 @@ function PhoneSignIn() {
     const [phoneNumber, setPhone] = useState("")
     const [user, setUser] = useState(null)
     const [otp, setOtp] = useState("")
-    const [displayLevel, setDisplayLevel] = useState(0)
+    const [displayLevel, setDisplayLevel] = useState(1)
     const [name, setName] = useState("")
     const [surname, setSurname] = useState("")
     const [password1, setPassword1] = useState("")
@@ -134,10 +134,10 @@ function PhoneSignIn() {
 
     return (
         <div className='d-flex flex-column align-items-center justify-content-center h-100 custom-gradient'>
-            <div className='d-flex flex-column align-items-center justify-content-center rounded-4 h-580 w-580 bg-white'>
+            <div className='d-flex flex-column align-items-center justify-content-center rounded-4 h-580 w-580 bg-white p-2'>
                 { displayLevel === 0 &&
                     <>
-                        <h1 style={{ fontSize: 40 }} className='mb-5 fw-bold text-dark'>Create your Account</h1>
+                        <h1 style={{ fontSize: 40 }} className='header-font mb-5 fw-bold text-dark'>Create your Account</h1>
                         <PhoneInput
                         className="w-auto mb-1"
                         country={"rs"}
@@ -156,8 +156,8 @@ function PhoneSignIn() {
                 }
                 { displayLevel === 1 &&
                     <>
-                        <h1 className='mb-3 fw-bold text-dark'>OTP Code Verification</h1>
-                        <p className='mb-0'>A verification code has been sent to your phone</p>
+                        <p style={{ fontSize: 34 }} className='header-font-bold mb-3 fw-bold text-dark'>OTP Code Verification</p>
+                        <p className='mb-0 mx-2 text-center'>A verification code has been sent to your phone</p>
                         <p>{phoneNumber}</p>
                         <InputOTP value={otp} onChange={setOtp} inputClassName="custom-input" />
                         <Button className='w-345 mt-3 rounded-0 btn-success' onClick={verifyOtp}>Verify OTP</Button>

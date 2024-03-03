@@ -64,7 +64,7 @@ function LogIn({onNavigation}) {
     return (
         <div className='d-flex flex-column align-items-center justify-content-center h-100 custom-gradient'>
             <div className='d-flex flex-column align-items-center justify-content-center rounded-4 h-580 w-580 bg-white'>
-                <h1 style={{ fontSize: 40 }} className='mb-5 fw-bold text-dark'>LogIn to Chat App</h1>
+                <h1 style={{ fontSize: 40 }} className='header-font mb-5 fw-bold text-dark'>LogIn to Chat App</h1>
                 <Form onSubmit={logInSubmit} noValidate>
 
                     <Form.Label>Phone number</Form.Label>
