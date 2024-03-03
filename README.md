@@ -6,8 +6,6 @@
 
 ![image](https://github.com/ZdravDim/Chat-App-Front-Web/assets/72796409/e0f2fbd6-9745-4599-940f-91c0ff1ae83e)
 
-![image](https://github.com/ZdravDim/Chat-App-Front-Web/assets/72796409/d287c7bb-baec-4fe7-b4a6-d642d942d436)
-
 ## Short description
 
 - Multi-Room Chat App with user authentication
