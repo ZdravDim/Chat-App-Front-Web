@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 
 import { InputOTP } from 'antd-input-otp'
@@ -23,7 +23,7 @@ function PhoneSignIn() {
     const [phoneNumber, setPhone] = useState("")
     const [user, setUser] = useState(null)
     const [otp, setOtp] = useState("")
-    const [displayLevel, setDisplayLevel] = useState(1)
+    const [displayLevel, setDisplayLevel] = useState(0)
     const [name, setName] = useState("")
     const [surname, setSurname] = useState("")
     const [password1, setPassword1] = useState("")
@@ -32,6 +32,10 @@ function PhoneSignIn() {
     const [invalidPhone, setInvalidPhone] = useState(false)
     const [phoneTaken, setPhoneTaken] = useState(false)
     const [isActive, setIsActive] = useState(false)
+
+    const button1Ref = useRef(null)
+    const button2Ref = useRef(null)
+    const formRef = useRef(null)
 
     const phoneNumberTaken = async() => {
 
@@ -143,13 +147,18 @@ function PhoneSignIn() {
                         country={"rs"}
                         value={phoneNumber}
                         onChange={(phone) => setPhone("+" + phone)}
+                        onKeyDown={(event) => { if (event.key === 'Enter' && button1Ref.current) button1Ref.current.click() }}
                         inputClass="custom-input"
                         buttonClass="custom-input"
                         />
                         { phoneTaken && <p className='text-danger my-1'>Phone number already registered</p> }
                         { invalidPhone && <p className='text-danger my-1'>Invalid phone number</p> }
                         <div className={isActive ? 'my-1' : ''} id="recaptcha" ></div>
-                        <Button className='w-300 mt-1 rounded-0 btn-success' onClick={sendOtp}>Send OTP</Button>
+                        <Button
+                        ref={button1Ref}
+                        className='w-300 mt-1 rounded-0 btn-success'
+                        onClick={sendOtp}
+                        >Send OTP</Button>
                         <p className="mt-1">Already have an account? <Link to="/login" className="text-success">Log in here</Link></p>
                         
                     </>
@@ -159,14 +168,26 @@ function PhoneSignIn() {
                         <p style={{ fontSize: 34 }} className='header-font-bold mb-3 fw-bold text-dark'>OTP Code Verification</p>
                         <p className='mb-0 mx-2 text-center'>A verification code has been sent to your phone</p>
                         <p>{phoneNumber}</p>
-                        <InputOTP value={otp} onChange={setOtp} inputClassName="custom-input" />
-                        <Button className='w-345 mt-3 rounded-0 btn-success' onClick={verifyOtp}>Verify OTP</Button>
+                        <InputOTP
+                        value={otp}
+                        onChange={setOtp}
+                        onKeyDown={(event) => { if (event.key === 'Enter' && button2Ref.current) button2Ref.current.click() }}
+                        inputClassName="custom-input" />
+                        <Button
+                        ref={button2Ref}
+                        className='w-345 mt-3 rounded-0 btn-success'
+                        onClick={verifyOtp}
+                        >Verify OTP</Button>
                     </>
                 }
                 { displayLevel === 2 &&
                     <>
                         <h1 className='mb-4 fw-bold text-dark'>Sign Up</h1>
-                        <Form onSubmit={signUpFunction} noValidate>
+                        <Form
+                        ref={formRef}
+                        onSubmit={signUpFunction}
+                        onKeyDown={(event) => { if (event.key === 'Enter' && formRef.current) formRef.current.submit() }}
+                        noValidate>
                             <Form.Group className="w-300 mb-1">
                                 <Form.Label>First Name</Form.Label>
                                 <Form.Control className='shadow-none rounded-0' size="sm" type="text" placeholder="Your First Name" onChange={(event) => setName(event.target.value)} required />

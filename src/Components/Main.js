@@ -54,6 +54,9 @@ function Main({onNavigation}) {
 	
 	const inputFieldRef = useRef(null)
 	const messageBodyRef = useRef(null)
+	const createRoomInputRef = useRef(null)
+	const joinRoomInputRef = useRef(null)
+	const addContactInputRef = useRef(null)
 
 	const [maxHeight, setMaxHeight] = useState(window.innerHeight)
 	const [maxWidth, setMaxWidth] = useState(window.innerWidth)
@@ -69,6 +72,8 @@ function Main({onNavigation}) {
 
 	const [colorPickerValue, setColorPickerValue] = useState("#bcd4cb")
 	const [colorApplied, setColorApplied] = useState(false)
+
+	const [deleteAccountMenu, setDeleteAccountMenu] = useState(false)
 
 	const handleMessage = useCallback((message) => {
 
@@ -151,6 +156,27 @@ function Main({onNavigation}) {
 		}
 
 	}, [])
+
+	useEffect(() => {
+
+		setTimeout(() => {
+			if (createRoomInputRef.current) createRoomInputRef.current.focus()
+			if (joinRoomInputRef.current) joinRoomInputRef.current.focus()
+			if (addContactInputRef.current) addContactInputRef.current.focus()
+		}, 200)
+
+	}, [addContactModal, joinRoomModal, createRoomModal])
+
+	useEffect(() => {
+
+		if (inputFieldRef.current) {
+			setTimeout(() => {
+            inputFieldRef.current.value = ''
+            inputFieldRef.current.focus()
+        	}, 500)
+		}
+
+	}, [currentRoom])
 
 	useEffect(() => {
 		
@@ -445,11 +471,18 @@ function Main({onNavigation}) {
 	}
 
 	const openRoom = async(newRoom) => {
-		const room_messages = await joinRoom(currentRoom, newRoom.roomName, userData.phoneNumber, false)
-		setMessageHistory(room_messages.sort(sortMessagesByTimestamp))
-		setCurrentRoom(newRoom.roomName)
-		if (newRoom.isPrivateRoom) setContactData(getContactData(userData.phoneNumber, newRoom))
-		if (maxWidth <= 700) setShowRooms(false)
+		try {
+			const room_messages = await joinRoom(currentRoom, newRoom.roomName, userData.phoneNumber, false)
+			setMessageHistory(room_messages.sort(sortMessagesByTimestamp))
+			setCurrentRoom(newRoom.roomName)
+			if (newRoom.isPrivateRoom) setContactData(getContactData(userData.phoneNumber, newRoom))
+			if (maxWidth <= 700) setShowRooms(false)
+			// if (inputFieldRef.current) {
+			// 	inputFieldRef.current.value = ''
+			// 	inputFieldRef.current.focus()
+			// }
+		}
+		catch(error) { console.log("Error opening room: " + error.message) }
 	}
 
 	const deleteAccount = async() => { 
@@ -484,7 +517,7 @@ function Main({onNavigation}) {
 
 	}
 
-	const submitChangePassword = async(event) => {
+	const submitResetPassword = async(event) => {
 		
 		event.preventDefault()
 		
@@ -520,7 +553,6 @@ function Main({onNavigation}) {
 			if (response.status === 200) {
 				if (response.data.success) {
 					setSuccessResetPassword(true)
-					alert("success")
 					return
 				} 
 				
@@ -555,13 +587,44 @@ function Main({onNavigation}) {
 	return (
 		<div className='d-flex flex-row h-100 bg-dark'>
 			<div style={{ minWidth: 40 }} className={(showRooms ? "" : "bg-custom-grey ") + `icons-div d-flex flex-column align-items-center w-8 text-center`}>
-				<IoMdContact className='icon' onClick={() => { setInputValueError(false); setEmptyInputError(false); setContactAlreadyAdded(false); setSameUserError(false); setAddContactModal(true) }}/>
-				<AiOutlineUsergroupAdd className='icon' onClick={ () => { setEmptyInputError(false); setInputValueError(false); setRoomAlredyJoinedError(false); setJoinRoomModal(true) }}/>
-				<IoCreateOutline className='icon' onClick={() => { setEmptyInputError(false); setInputValueError(false); setCreateRoomModal(true)}}/>
+				<IoMdContact className='icon'
+				onClick={() => {
+					setContactPhoneNumber('')
+					setInputValueError(false)
+					setEmptyInputError(false)
+					setContactAlreadyAdded(false)
+					setSameUserError(false)
+					setAddContactModal(true)
+				}}/>
+				<AiOutlineUsergroupAdd className='icon'
+				onClick={ () => {
+					setRoomModalName('')
+					setEmptyInputError(false)
+					setInputValueError(false)
+					setRoomAlredyJoinedError(false)
+					setJoinRoomModal(true)
+				}}/>
+				<IoCreateOutline className='icon'
+				onClick={() => {
+					if (joinRoomInputRef.current) joinRoomInputRef.current.focus()
+					setRoomModalName('')
+					setEmptyInputError(false)
+					setInputValueError(false)
+					setCreateRoomModal(true)
+				}}/>
 				<BiExpandHorizontal className='icon' onClick={() => setShowRooms(!showRooms)}/>
 				<div className='flex-grow-1'></div>
 				<RiLogoutBoxLine className='icon' onClick={logOut} />
-				<IoSettingsOutline className='icon mb-3' onClick= { () => { setSuccessResetPassword(false); setNewPassword1(""); setNewPassword2(""); setPasswordsDifferent(false); setInputValueError(false); setSettingsModal(true) } }/>
+				<IoSettingsOutline className='icon mb-3'
+				onClick= { () => {
+					setSuccessResetPassword(false)
+					setNewPassword1("")
+					setNewPassword2("")
+					setPasswordsDifferent(false)
+					setInputValueError(false)
+					setDeleteAccountMenu(false)
+					setSettingsModal(true)
+				}}/>
 			</div>
 
 			{ showRooms &&
@@ -662,8 +725,8 @@ function Main({onNavigation}) {
 				show={ settingsModal }
 				onHide={ () => setSettingsModal(false) }
 				backdrop="static"
-				keyboard={false}
-				centered>
+				centered
+				>
 
 				<Modal.Header closeButton> 
 					<Modal.Title>Settings</Modal.Title> 
@@ -673,18 +736,27 @@ function Main({onNavigation}) {
 					<Tabs defaultActiveKey="account" id="uncontrolled-tab-example" className="mb-3">
 						<Tab eventKey="account" title="Account">
 							<div className='d-flex flex-row w-100 bg-grey'>
-								<p className='w-85 mb-0 mt-1'>Delete your account</p>
-								<MdDeleteOutline className='apply-icon apply-icon-hover' onClick={deleteAccount}/>
+								<p className='w-85 ps-3 mb-0 mt-1'>Delete your account</p>
+								<MdDeleteOutline className='apply-icon apply-icon-hover' onClick={() => setDeleteAccountMenu(true)}/>
 							</div>
+							{ deleteAccountMenu && 
+								<div style={{ maxWidth: 300, backgroundColor: "#f5f5f5" }} className='d-flex flex-column mx-auto mt-3 mb-2 pt-2 pb-3 rounded-2'>
+									<p style={{ fontSize: 20 }} className='text-center fw-bold'>Are you sure?</p>
+									<div className='d-flex justify-content-center'>
+										<Button className='btn btn-danger me-2' style={{ width: 100 }} onClick={deleteAccount}>Yes</Button>
+										<Button className='btn btn-success ms-2' style={{ width: 100 }} onClick={() => setSettingsModal(false)}>No</Button>
+									</div>
+								</div>
+							}
 						</Tab>
 						<Tab eventKey="security" title="Security">
 							<div className='d-flex flex-column w-100 bg-grey mx-auto' style={{ maxWidth: 300 }}>
 								{ successResetPassword ? 
-									<h4>Registration successful</h4>
+									<h4>Password Reset Success</h4>
 									: 
 									<>
 										<h4 className='mb-4 mt-3 text-center'>Reset your password</h4>
-										<Form className='d-flex flex-column' onSubmit={ submitChangePassword } noValidate>
+										<Form className='d-flex flex-column' onSubmit={ submitResetPassword } noValidate>
 											<Form.Group>
 												<Form.Label>Old password</Form.Label>
 												<Form.Control className='shadow-none rounded-0' size="sm" type="password" onChange={(event) => setOldPassword(event.target.value)} required />
@@ -700,7 +772,7 @@ function Main({onNavigation}) {
 											
 											{ passwordsDifferent && <p className='text-danger my-0'>Passwords not matching</p> }
 											{ inputValueError && <p className='text-danger mb-0'>Wrong old password</p> }
-											<Button type="submit" className='mt-4 rounded-0 btn-success mx-auto'>Reset password</Button>
+											<Button type="submit" className='mt-4 mb-2 rounded-0 btn-success mx-auto'>Reset password</Button>
 										</Form>
 									</>
 								}
@@ -740,7 +812,6 @@ function Main({onNavigation}) {
 				show={ createRoomModal }
 				onHide={ () => setCreateRoomModal(false) }
 				backdrop="static"
-				keyboard={false}
 				centered>
 
 				<Modal.Header closeButton> 
@@ -748,7 +819,14 @@ function Main({onNavigation}) {
 				</Modal.Header>
 
 				<Modal.Body>
-					<Form.Control className='shadow-none' type="text" placeholder="Room name" onChange={ (event) => setRoomModalName(event.target.value) } />
+					<Form.Control
+					ref={createRoomInputRef}
+					className='shadow-none'
+					type="text"
+					placeholder="Room name"
+					onChange={ (event) => setRoomModalName(event.target.value) }
+					onKeyDown={(event) => { if (event.key === 'Enter') JoinOrCreateRoom(true) }}
+					/>
 					{ emptyInputError && <p className='text-danger mb-0'>Room name can't be empty</p> }
 					{ inputValueError && <p className='text-danger mb-0'>Room already exists</p> }
 					{ illegalRoomName && <p className='text-danger mb-0'>Room has illegal character (+)</p> }
@@ -764,15 +842,22 @@ function Main({onNavigation}) {
 				show={ joinRoomModal }
 				onHide={ () => setJoinRoomModal(false) }
 				backdrop="static"
-				keyboard={false}
-				centered>
+				centered
+				>
 
 				<Modal.Header closeButton> 
 					<Modal.Title>Join new Room</Modal.Title> 
 				</Modal.Header>
 
 				<Modal.Body>
-					<Form.Control className='shadow-none' type="text" placeholder="Room name" onChange={ (event) => setRoomModalName(event.target.value) } />
+					<Form.Control
+					ref={joinRoomInputRef}
+					className='shadow-none'
+					type="text"
+					placeholder="Room name"
+					onChange={ (event) => setRoomModalName(event.target.value) }
+					onKeyDown={(event) => { if (event.key === 'Enter') JoinOrCreateRoom() }}
+					/>
 					{ emptyInputError && <p className='text-danger mb-0'>Room name can't be empty</p> }
 					{ inputValueError && <p className='text-danger mb-0'>Room does not exist</p> }
 					{ roomAlreadyJoinedError && <p className='text-danger mb-0'>Room already joined</p> }
@@ -788,7 +873,6 @@ function Main({onNavigation}) {
 				show={ addContactModal }
 				onHide={ () => setAddContactModal(false) }
 				backdrop="static"
-				keyboard={false}
 				centered>
 
 				<Modal.Header closeButton> 
@@ -796,7 +880,14 @@ function Main({onNavigation}) {
 				</Modal.Header>
 
 				<Modal.Body>
-					<Form.Control className='shadow-none' type="text" placeholder="Enter contact phone number (ex. +38164123456)" onChange={ (event) => setContactPhoneNumber(event.target.value) } />
+					<Form.Control
+					ref={addContactInputRef}
+					className='shadow-none'
+					type="text"
+					placeholder="Enter contact phone number (ex. +38164123456)"
+					onChange={ (event) => setContactPhoneNumber(event.target.value) }
+					onKeyDown={(event) => { if (event.key === 'Enter') addContact() }}
+					/>
 					{ emptyInputError && <p className='text-danger mb-0'>Phone number can't be empty</p> }	
 					{ inputValueError && <p className='text-danger mb-0'>User does not exist</p> }
 					{ sameUserError && <p className='text-danger mb-0'>You can't add yourself as a contact</p> }
