@@ -43,7 +43,7 @@ function PhoneSignIn() {
 
             const data = { phoneNumber: phoneNumber }
             
-            const response = await axios.post('http://localhost:3001/api/phone-available', data, { withCredentials: true })
+            const response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/phone-available', data, { withCredentials: true })
 
             if (response.status === 200) return false
 
@@ -127,7 +127,7 @@ function PhoneSignIn() {
         }
 
         try {
-            const response = await axios.post('http://localhost:3001/api/sign-up', userData, { withCredentials: true })
+            const response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/sign-up', userData, { withCredentials: true })
             if (response.status === 200) setDisplayLevel(3)
         }
         catch(error) {

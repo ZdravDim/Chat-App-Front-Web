@@ -6,7 +6,7 @@ let messageListener = null
 let roomListener = null
 
 const socket_connect = () => {
-    const URL = 'http://localhost:3001'
+    const URL = 'https://chatappbackendrs.azurewebsites.net'
 
     socket = io(URL)
 
@@ -27,7 +27,7 @@ export async function joinRoom(oldRoom, newRoom, phoneNumber, createRoom) {
         socket.emit('join', phoneNumber, newRoom, createRoom)
 
         try {
-            const response = await axios.post("http://localhost:3001/api/room-messages", { roomName: newRoom }, { withCredentials: true })
+            const response = await axios.post("https://chatappbackendrs.azurewebsites.net/api/room-messages", { roomName: newRoom }, { withCredentials: true })
             if (response.status === 200) return response.data.messagesArray
             return []
         } 

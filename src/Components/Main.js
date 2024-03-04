@@ -103,7 +103,7 @@ function Main({onNavigation}) {
 			setUserData(tempData)
 
             try {
-                const response = await axios.post('http://localhost:3001/api/user-rooms', null, { withCredentials: true })
+                const response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/user-rooms', null, { withCredentials: true })
                 if (response.status === 200) setRooms(response.data.rooms)
             } catch (error) {
                 console.log(error.message)
@@ -119,7 +119,7 @@ function Main({onNavigation}) {
 
 		async function fetchUserData() {
 			try {
-				const response = await axios.post('http://localhost:3001/api/user-data', null, { withCredentials: true })
+				const response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/user-data', null, { withCredentials: true })
 				if (response.status === 200) setUserData(response.data)
 			}
 			catch(error) {
@@ -129,7 +129,7 @@ function Main({onNavigation}) {
 
 		async function fetchUserRooms() {
 			try {
-				const response = await axios.post('http://localhost:3001/api/user-rooms', null, { withCredentials: true })
+				const response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/user-rooms', null, { withCredentials: true })
 				if (response.status === 200) setRooms(response.data.rooms)
 			}
 			catch(error) {
@@ -264,7 +264,7 @@ function Main({onNavigation}) {
 		try {
 			
 			let postData = { phoneNumber: contactPhoneNumber }
-			let response = await axios.post('http://localhost:3001/api/user-exists', postData, { withCredentials: true })
+			let response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/user-exists', postData, { withCredentials: true })
 
 			if (response.status === 200) {
 				if (response.data.userExists) {
@@ -274,7 +274,7 @@ function Main({onNavigation}) {
 						phoneNumber2: contactPhoneNumber
 					}
 					
-					response = await axios.post('http://localhost:3001/api/private-room-exists', postData, { withCredentials: true })
+					response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/private-room-exists', postData, { withCredentials: true })
 
 					if (response.status === 200) {
 						if (!response.data.roomExists) {
@@ -363,7 +363,7 @@ function Main({onNavigation}) {
 			}
 
 			try {
-				let response = await axios.post('http://localhost:3001/api/room-exists', postData, { withCredentials: true })
+				let response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/room-exists', postData, { withCredentials: true })
 
 				if (response.data.roomExists) {
 
@@ -457,7 +457,7 @@ function Main({onNavigation}) {
 				roomName: currentRoom
 			}
 
-			const response = await axios.post('http://localhost:3001/api/accept-request', postData, { withCredentials: true })
+			const response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/accept-request', postData, { withCredentials: true })
 
 			if (response.status === 200) {
 				let updatedUserData = { ...userData }
@@ -489,9 +489,9 @@ function Main({onNavigation}) {
 		
 		try {
 
-			await axios.post('http://localhost:3001/api/auth', null, { withCredentials: true })
+			await axios.post('https://chatappbackendrs.azurewebsites.net/api/auth', null, { withCredentials: true })
 			
-			const response = await axios.delete('http://localhost:3001/api/delete-account', { withCredentials: true })
+			const response = await axios.delete('https://chatappbackendrs.azurewebsites.net/api/delete-account', { withCredentials: true })
 
 			if (response.status === 200) {
 				onNavigation()
@@ -506,7 +506,7 @@ function Main({onNavigation}) {
 
 		try {
 
-			const response = await axios.get('http://localhost:3001/api/logout', { withCredentials: true })
+			const response = await axios.get('https://chatappbackendrs.azurewebsites.net/api/logout', { withCredentials: true })
 
 			if (response.status === 200) {
 				onNavigation()
@@ -548,7 +548,7 @@ function Main({onNavigation}) {
 				newPassword: newHashedPassword
 			}
 
-			const response = await axios.post('http://localhost:3001/api/reset-password', postUserData, { withCredentials: true })
+			const response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/reset-password', postUserData, { withCredentials: true })
 			
 			if (response.status === 200) {
 				if (response.data.success) {
@@ -571,7 +571,7 @@ function Main({onNavigation}) {
 				phoneNumber: userData.phoneNumber,
 				userColor: colorPickerValue
 			}
-			const response = await axios.post('http://localhost:3001/api/change-color', postData, { withCredentials: true })
+			const response = await axios.post('https://chatappbackendrs.azurewebsites.net/api/change-color', postData, { withCredentials: true })
 			if (response.status === 200) {
 				const tempData = { ...userData }
 				tempData.userColor = colorPickerValue
