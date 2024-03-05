@@ -2,7 +2,7 @@ services:
   front:
     image: zd48/chat-app:front
     ports:
-      - "3000:3000"
+      - "3000:80"
 
   back:
     image: zd48/chat-app:back

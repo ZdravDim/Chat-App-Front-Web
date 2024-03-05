@@ -37,7 +37,7 @@
 - Use the `cd` command to navigate to folder containing downloaded file
 - Then run `docker-compose up`
 - Frontend will run on http://localhost:3000
-- Backend will run on https://chatappbackendrs.azurewebsites.net
+- Backend will run on http://localhost:3001
 
 ### Only frontend (will not run well without backend)
 - Run `npm run build` to create a production build, then `npm install -g serve` to install [serve](https://github.com/vercel/serve) then `serve -s build` to serve static files, it will run on http://localhost:3000
