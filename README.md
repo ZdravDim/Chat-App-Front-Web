@@ -20,11 +20,14 @@
 - Socket.IO for WebSocket connection
 - Docker
 
-## GitHub Pages
+## Try it out (Currently does not work on safari)
 
-- App is live on: https://zdravdim.github.io/Chat-App-Front-Web/#/login
+- App is live on: https://chatappfront.azurewebsites.net
 
 ## Installation
+
+> [!NOTE]
+> Project depends on Firebase configuration, which is set in environment variables, so in order to start up the project by cloning, you need to setup you own Firebase project and put configuration in .env file
 
 - Use the `git clone https://github.com/ZdravDim/Chat-App-Front-Web.git` command to clone the project and then `npm install` to install dependencies.
 
@@ -36,8 +39,8 @@
 - Download https://github.com/ZdravDim/Chat-App-Front-Web/blob/main/docker-compose.yaml
 - Use the `cd` command to navigate to folder containing downloaded file
 - Then run `docker-compose up`
-- Frontend will run on http://localhost:3000
-- Backend will run on http://localhost:3001
+- Frontend will run on http://localhost:80
+- Backend will run on http://localhost:8080
 
 ### Only frontend (will not run well without backend)
-- Run `npm run build` to create a production build, then `npm install -g serve` to install [serve](https://github.com/vercel/serve) then `serve -s build` to serve static files, it will run on http://localhost:3000
+- Run `npm run build` to create a production build, then `npm install -g serve` to install [serve](https://github.com/vercel/serve) then `serve -s build` to serve static files, it will run on http://localhost:80
