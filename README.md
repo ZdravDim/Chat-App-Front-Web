@@ -22,7 +22,7 @@
 
 ## Try it out (Currently does not work on safari)
 
-- App is live on: https://chatappfront.azurewebsites.net
+- App is live on: (...)
 
 ## Installation
 
