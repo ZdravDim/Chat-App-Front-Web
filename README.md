@@ -20,11 +20,7 @@
 - Socket.IO for WebSocket connection
 - Docker
 
-## Try it out (Currently does not work on safari)
-
-- App is live on: (...)
-
-## Installation
+## Installation (only frontend)
 
 > [!NOTE]
 > Project depends on Firebase configuration, which is set in environment variables, so in order to start up the project by cloning, you need to setup you own Firebase project and put configuration in .env file
