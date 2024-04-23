@@ -9,7 +9,6 @@
 ## Short description
 
 - Multi-Room Chat App with user authentication
-- The project is still in progress
 
 ## Technologies
 
