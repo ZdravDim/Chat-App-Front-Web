@@ -19,16 +19,18 @@
 - Socket.IO for WebSocket connection
 - Docker
 
-## Installation (only frontend)
+## Installation
 
 > [!NOTE]
 > Project depends on Firebase configuration, which is set in environment variables, so in order to start up the project by cloning, you need to setup you own Firebase project and put configuration in .env file
+
+### Only Frontend
 
 - Use the `git clone https://github.com/ZdravDim/Chat-App-Front-Web.git` command to clone the project and then `npm install` to install dependencies.
 
 - Run `npm run build` to create a production build, then `npm install -g serve` to install [serve](https://github.com/vercel/serve) then `serve -s build` to serve static files, it will run on http://localhost:80
 
-## Installation (both frontend and backend)
+### Frontend and Backend
 
 - Install [Docker](https://www.docker.com/products/docker-desktop)
 - Download https://github.com/ZdravDim/Chat-App-Front-Web/blob/main/docker-compose.yaml
