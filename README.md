@@ -26,9 +26,9 @@
 
 - Use the `git clone https://github.com/ZdravDim/Chat-App-Front-Web.git` command to clone the project and then `npm install` to install dependencies.
 
-## Starting up the project
+- Run `npm run build` to create a production build, then `npm install -g serve` to install [serve](https://github.com/vercel/serve) then `serve -s build` to serve static files, it will run on http://localhost:80
 
-### Both frontend and backend
+## Installation (both frontend and backend)
 
 - Install [Docker](https://www.docker.com/products/docker-desktop)
 - Download https://github.com/ZdravDim/Chat-App-Front-Web/blob/main/docker-compose.yaml
@@ -36,6 +36,3 @@
 - Then run `docker-compose up`
 - Frontend will run on http://localhost:80
 - Backend will run on http://localhost:8080
-
-### Only frontend (will not run well without backend)
-- Run `npm run build` to create a production build, then `npm install -g serve` to install [serve](https://github.com/vercel/serve) then `serve -s build` to serve static files, it will run on http://localhost:80
