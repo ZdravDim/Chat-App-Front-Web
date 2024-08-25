@@ -1,10 +1,11 @@
 # Chat App Frontend
 
-![image](https://github.com/ZdravDim/Chat-App-Front-Web/assets/72796409/c818c7bd-c506-41ed-8bb3-b98929f4a15f)
+![Collaborators](https://img.shields.io/badge/Collaborators-2-green)
 
-![image](https://github.com/ZdravDim/Chat-App-Front-Web/assets/72796409/7fd558aa-e0d9-429b-b598-9defbe6e307e)
+## Collaborators
 
-![image](https://github.com/ZdravDim/Chat-App-Front-Web/assets/72796409/e0f2fbd6-9745-4599-940f-91c0ff1ae83e)
+- [@ZdravDim](https://github.com/ZdravDim)
+- [@dimicck](https://github.com/dimicck)
 
 ## Short description
 
@@ -18,6 +19,15 @@
 - JWT authentication
 - Socket.IO for WebSocket connection
 - Docker
+
+
+## Project overview
+
+![image](https://github.com/ZdravDim/Chat-App-Front-Web/assets/72796409/c818c7bd-c506-41ed-8bb3-b98929f4a15f)
+
+![image](https://github.com/ZdravDim/Chat-App-Front-Web/assets/72796409/7fd558aa-e0d9-429b-b598-9defbe6e307e)
+
+![image](https://github.com/ZdravDim/Chat-App-Front-Web/assets/72796409/e0f2fbd6-9745-4599-940f-91c0ff1ae83e)
 
 ## Installation
 
